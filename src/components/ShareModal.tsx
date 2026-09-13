@@ -5,6 +5,7 @@ import { WhatsAppIcon, EmailIcon } from "@/components/ConnectIcons";
 import type { Brochure } from "@/lib/brochures";
 import { PdfPreview } from "@/components/PdfPreview";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -67,6 +68,7 @@ export function ShareModal({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
+  useBodyScrollLock(true);
 
   useEffect(() => {
     const fullUrl = `${window.location.origin}/brochure/${brochure.id}`;

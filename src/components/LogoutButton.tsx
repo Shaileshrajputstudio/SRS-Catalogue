@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { logout } from "@/app/actions";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 // "Log out" in the top bar — a click opens the same centered confirm
 // popup pattern used for removing a brochure, rather than a corner
 // popover, so both destructive/exiting confirmations look consistent.
 export function LogoutButton() {
   const [confirming, setConfirming] = useState(false);
+  useBodyScrollLock(confirming);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {

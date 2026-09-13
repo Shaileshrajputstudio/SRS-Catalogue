@@ -8,6 +8,7 @@ import { renderFirstPageToPng } from "@/lib/pdfThumbnail";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { updateBrochureTags, updateBrochureWebsiteLink, updateBrochureType } from "@/app/actions/brochures";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const CATALOGUE_TYPE_LABELS: Record<CatalogueType, string> = {
   product: "Product",
@@ -58,6 +59,7 @@ export function UploadBrochureModal({
   onClose: () => void;
   onUploaded: (brochure: Brochure) => void;
 }) {
+  useBodyScrollLock(true);
   const [title, setTitle] = useState("");
   const [catalogueType, setCatalogueType] = useState<CatalogueType | null>(null);
   const [tags, setTags] = useState<string[]>([]);

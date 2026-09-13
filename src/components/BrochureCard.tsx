@@ -8,6 +8,7 @@ import { deleteBrochure, updateBrochureTags } from "@/app/actions/brochures";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -55,11 +56,11 @@ export function BrochureCard({
   const [shareOpen, setShareOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [tags, setTags] = useState(brochure.tags);
-  const [tagsDirty, setTagsDirty] = useState(false);
   const [isSavingTags, startTagsTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
+  useBodyScrollLock(confirmingRemove);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -79,11 +80,11 @@ export function BrochureCard({
     };
   }, [menuOpen]);
 
-  function saveTags() {
+  function saveTags(next: string[]) {
+    setTags(next);
     startTagsTransition(async () => {
-      const saved = await updateBrochureTags(brochure.id, tags);
+      const saved = await updateBrochureTags(brochure.id, next);
       setTags(saved);
-      setTagsDirty(false);
       onTagsSaved(brochure.id, saved);
     });
   }
@@ -156,24 +157,8 @@ export function BrochureCard({
             <label className="mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Tags
             </label>
-            <TagInput
-              tags={tags}
-              onChange={(next) => {
-                setTags(next);
-                setTagsDirty(true);
-              }}
-              suggestions={allTags}
-              maxTags={1}
-            />
-            {tagsDirty && (
-              <button
-                onClick={saveTags}
-                disabled={isSavingTags}
-                className="mt-2 w-full rounded-full border border-[var(--ink)] px-4 py-2 text-xs font-medium text-[var(--ink)] transition hover:bg-[var(--ink)] hover:text-white disabled:opacity-50"
-              >
-                {isSavingTags ? "Saving tags…" : "Save tags"}
-              </button>
-            )}
+            <TagInput tags={tags} onChange={saveTags} suggestions={allTags} maxTags={1} />
+            {isSavingTags && <p className="mt-1.5 text-xs text-[var(--ink)]/40">Saving…</p>}
 
             <label className="mt-4 mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Website Link

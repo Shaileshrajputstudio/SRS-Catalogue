@@ -53,7 +53,11 @@ export default async function BrochurePage({
   const brochure = all.find((b) => b.id === id);
   if (!brochure) notFound();
 
-  const others = all.filter((b) => b.id !== id && shareTag(brochure.tags, b.tags)).slice(0, 8);
+  // Same Catalogue Type only — a Product catalogue shouldn't cross-sell a
+  // Story or General one just because both happen to be untagged.
+  const others = all
+    .filter((b) => b.id !== id && b.catalogueType === brochure.catalogueType && shareTag(brochure.tags, b.tags))
+    .slice(0, 8);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-6 sm:py-8">

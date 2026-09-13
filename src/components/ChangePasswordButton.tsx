@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { changePassword, type ChangePasswordState } from "@/app/actions";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const initialState: ChangePasswordState = {};
 
@@ -12,6 +13,7 @@ const initialState: ChangePasswordState = {};
 // popover.
 export function ChangePasswordButton() {
   const [open, setOpen] = useState(false);
+  useBodyScrollLock(open);
   const [state, formAction, isPending] = useActionState(changePassword, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
