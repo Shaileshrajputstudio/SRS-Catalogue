@@ -3,8 +3,7 @@ import { studio } from "@/lib/studio";
 import { getBrochures } from "@/lib/brochures";
 import { getWebsiteLinkOptions } from "@/lib/websiteCategories";
 import { BrochureManager } from "@/components/BrochureManager";
-import { LogoutButton } from "@/components/LogoutButton";
-import { ChangePasswordButton } from "@/components/ChangePasswordButton";
+import { HeaderMenu } from "@/components/HeaderMenu";
 
 // Always fresh — the admin dashboard needs to show the current brochure
 // state immediately after an upload, not a stale cached snapshot.
@@ -21,13 +20,9 @@ export default async function AdminPage() {
       >
         <span className="flex items-center gap-2 tracking-[0.15em] uppercase">
           <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
-          <span className="sm:hidden">SRS Hub</span>
-          <span className="hidden sm:inline">SRS Catalogue Hub</span>
+          SRS Catalogue Hub
         </span>
-        <div className="flex items-center gap-5">
-          <ChangePasswordButton />
-          <LogoutButton />
-        </div>
+        <HeaderMenu />
       </div>
 
       <div className="mx-auto max-w-[1320px] px-6 pt-5 pb-8 sm:px-14 sm:pt-6 sm:pb-10">

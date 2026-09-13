@@ -92,8 +92,19 @@ body {
   }
 }
 
+/* No `forwards`: neither user of this class (FloatingContact's menu,
+   HeaderMenu's mobile dropdown) sets its own opacity/transform outside
+   the animation, so once the 0.6s run finishes and the animation effect
+   is dropped, the element reverts to its natural default (opacity 1,
+   transform none) anyway — same look, no snap. That matters because a
+   held (`forwards`) animation targeting `transform` keeps the element as
+   a containing block for `position: fixed` descendants for as long as
+   the hold lasts, even once it settles on an identity value — which
+   silently squeezed a full-screen fixed modal (ChangePasswordDialog)
+   nested inside HeaderMenu's dropdown into the dropdown's own small box.
+   Dropping `forwards` ends the animation's hold, so that stops. */
 .animate-fade-up {
-  animation: srs-fade-up 0.6s ease forwards;
+  animation: srs-fade-up 0.6s ease;
 }
 
 /* Every modal/popup in the admin tool slides up from the bottom like a
