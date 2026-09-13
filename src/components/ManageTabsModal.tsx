@@ -10,7 +10,7 @@ import {
 } from "@/app/actions/catalogueTypes";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
-function PencilIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
+function PencilIcon({ className = "h-4.5 w-4.5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path
@@ -24,7 +24,7 @@ function PencilIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   );
 }
 
-function TrashIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
+function TrashIcon({ className = "h-4.5 w-4.5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path
@@ -35,6 +35,22 @@ function TrashIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
         strokeLinejoin="round"
       />
       <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ChevronUpIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M6 15l6-6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -195,7 +211,7 @@ export function ManageTabsModal({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-5">
           <div className="flex flex-col gap-2">
             {catalogueTypes.map((t, idx) => (
               <div key={t.key} className="rounded-xl border border-[var(--line)] bg-[#F6F3E8]/60 p-3">
@@ -206,18 +222,18 @@ export function ManageTabsModal({
                       disabled={busy || idx === 0}
                       onClick={() => move(t.key, -1)}
                       aria-label={`Move ${t.label} up`}
-                      className="flex h-5 w-5 items-center justify-center text-xs text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
+                      className="flex h-6 w-6 items-center justify-center text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
                     >
-                      ▲
+                      <ChevronUpIcon />
                     </button>
                     <button
                       type="button"
                       disabled={busy || idx === catalogueTypes.length - 1}
                       onClick={() => move(t.key, 1)}
                       aria-label={`Move ${t.label} down`}
-                      className="flex h-5 w-5 items-center justify-center text-xs text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
+                      className="flex h-6 w-6 items-center justify-center text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
                     >
-                      ▼
+                      <ChevronDownIcon />
                     </button>
                   </div>
 
@@ -262,7 +278,7 @@ export function ManageTabsModal({
                         onClick={() => startRename(t)}
                         disabled={busy}
                         aria-label={`Rename ${t.label}`}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-40"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-40"
                       >
                         <PencilIcon />
                       </button>
@@ -272,7 +288,7 @@ export function ManageTabsModal({
                         disabled={busy || catalogueTypes.length <= 1}
                         aria-label={`Delete ${t.label}`}
                         title={catalogueTypes.length <= 1 ? "At least one tab has to stay" : undefined}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
                       >
                         <TrashIcon />
                       </button>
@@ -330,7 +346,7 @@ export function ManageTabsModal({
         <form
           onSubmit={handleAdd}
           style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
-          className="flex items-center gap-2 border-t border-[var(--line)] p-6 pt-4"
+          className="flex items-center gap-2 border-t border-[var(--line)] p-6 pt-6"
         >
           <input
             value={newLabel}

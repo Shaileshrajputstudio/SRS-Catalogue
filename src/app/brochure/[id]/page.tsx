@@ -24,19 +24,25 @@ export async function generateMetadata({
   if (!brochure) return {};
 
   const description = `A closer look at the ${brochure.title} collection, from ${studio.name}.`;
+  // openGraph/twitter titles are read directly by link-preview scrapers
+  // (WhatsApp, iMessage, etc.) — they don't go through the root layout's
+  // title template the way the plain `title` field below does, so the
+  // studio name has to be spelled out here too, or a shared link shows
+  // just the bare catalogue name with no indication of whose it is.
+  const shareTitle = `${brochure.title} — ${studio.name}`;
 
   return {
     title: brochure.title,
     description,
     openGraph: {
-      title: brochure.title,
+      title: shareTitle,
       description,
       type: "website",
       images: brochure.thumbnailUrl ? [{ url: brochure.thumbnailUrl }] : undefined,
     },
     twitter: {
       card: brochure.thumbnailUrl ? "summary_large_image" : "summary",
-      title: brochure.title,
+      title: shareTitle,
       description,
       images: brochure.thumbnailUrl ? [brochure.thumbnailUrl] : undefined,
     },

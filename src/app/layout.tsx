@@ -29,7 +29,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Catalogue Library — Shailesh Rajput Studio",
+    default: "SRS Catalogue Hub",
     template: "%s — Shailesh Rajput Studio",
   },
   description: "Product catalogues from Shailesh Rajput Studio.",

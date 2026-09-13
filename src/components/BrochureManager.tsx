@@ -155,27 +155,34 @@ export function BrochureManager({
         </button>
       </div>
 
-      <div className="font-sans-ui mb-8 flex flex-wrap items-center gap-1 border-y border-[var(--line)] py-1">
-        {catalogueTypes.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className={`rounded-full px-4 py-2 text-sm transition ${
-              activeTab === key
-                ? "bg-[var(--ink)] text-white"
-                : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
-            }`}
-          >
-            {label} <span className={activeTab === key ? "text-white/60" : "text-[var(--ink)]/40"}>{countByType[key] ?? 0}</span>
-          </button>
-        ))}
+      <div className="font-sans-ui mb-8 flex items-center gap-1 border-y border-[var(--line)] py-1">
+        {/* min-w-0 lets this shrink below its content's natural width
+            inside the flex row — without it, overflow-x-auto never
+            kicks in and the row just grows, pushing the gear button off
+            or wrapping the whole thing to a second line instead of
+            scrolling like a slider. */}
+        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          {catalogueTypes.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm whitespace-nowrap transition ${
+                activeTab === key
+                  ? "bg-[var(--ink)] text-white"
+                  : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
+              }`}
+            >
+              {label} <span className={activeTab === key ? "text-white/60" : "text-[var(--ink)]/40"}>{countByType[key] ?? 0}</span>
+            </button>
+          ))}
+        </div>
         <button
           onClick={() => setManageTabsOpen(true)}
           aria-label="Manage tabs"
           title="Manage tabs"
-          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--paper-2)]/60 hover:text-[var(--ink)]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--paper-2)]/60 hover:text-[var(--ink)]"
         >
-          <GearIcon className="h-4 w-4" />
+          <GearIcon className="h-[18px] w-[18px]" />
         </button>
       </div>
 

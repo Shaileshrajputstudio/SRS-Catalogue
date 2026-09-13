@@ -16,6 +16,17 @@ button:not(:disabled),
   display: none !important;
 }
 
+/* The catalogue-type tabs row scrolls horizontally as one line instead
+   of wrapping to a second — this hides the scrollbar so it reads as a
+   deliberate slider, not a cramped overflowing list. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   /* SRS foundational palette — matches the main studio website exactly */
   --ink: #1e1e1e; /* Carbon Black */

@@ -1,6 +1,17 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
+
+// How long the "×" (enter confirm mode) is disabled right after a tag
+// is committed, and how long the "✓" (actually remove) is disabled
+// right after entering confirm mode. Both exist for the same reason:
+// on mobile, tapping Apply and then tapping again a moment later (to
+// dismiss the keyboard, or just out of habit) can land on whatever
+// control the chip's remove button ends up under once the layout
+// reflows — without these, that stray second tap can walk a
+// just-added tag straight through "remove?" and into actually removed.
+const JUST_ADDED_COOLDOWN_MS = 500;
+const CONFIRM_COOLDOWN_MS = 350;
 
 function CheckIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
@@ -43,6 +54,10 @@ export function TagInput({
 }) {
   const [draft, setDraft] = useState("");
   const [confirmingTag, setConfirmingTag] = useState<string | null>(null);
+  const [justAdded, setJustAdded] = useState(false);
+  const [confirmReady, setConfirmReady] = useState(false);
+  const justAddedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const confirmReadyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listId = useId();
   const atLimit = maxTags !== undefined && tags.length >= maxTags;
 
@@ -52,10 +67,28 @@ export function TagInput({
     if (!clean || atLimit) return;
     if (tags.some((t) => t.toLowerCase() === clean.toLowerCase())) return;
     onChange([...tags, clean]);
+    setJustAdded(true);
+    if (justAddedTimer.current) clearTimeout(justAddedTimer.current);
+    justAddedTimer.current = setTimeout(() => setJustAdded(false), JUST_ADDED_COOLDOWN_MS);
+  }
+
+  function startConfirm(tag: string) {
+    if (justAdded) return;
+    setConfirmingTag(tag);
+    setConfirmReady(false);
+    if (confirmReadyTimer.current) clearTimeout(confirmReadyTimer.current);
+    confirmReadyTimer.current = setTimeout(() => setConfirmReady(true), CONFIRM_COOLDOWN_MS);
+  }
+
+  function cancelConfirm() {
+    setConfirmingTag(null);
+    setConfirmReady(false);
+    if (confirmReadyTimer.current) clearTimeout(confirmReadyTimer.current);
   }
 
   function removeTag(tag: string) {
-    setConfirmingTag(null);
+    if (!confirmReady) return;
+    cancelConfirm();
     onChange(tags.filter((t) => t !== tag));
   }
 
@@ -79,14 +112,15 @@ export function TagInput({
                   <button
                     type="button"
                     onClick={() => removeTag(tag)}
+                    disabled={!confirmReady}
                     aria-label={`Confirm remove tag ${tag}`}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 transition-colors hover:bg-red-100 hover:text-red-800"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 transition-colors hover:bg-red-100 hover:text-red-800 disabled:cursor-not-allowed disabled:text-red-300 disabled:hover:bg-transparent"
                   >
                     <CheckIcon className="h-4 w-4" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => setConfirmingTag(null)}
+                    onClick={cancelConfirm}
                     aria-label="Cancel"
                     className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)]"
                   >
@@ -96,9 +130,10 @@ export function TagInput({
               ) : (
                 <button
                   type="button"
-                  onClick={() => setConfirmingTag(tag)}
+                  onClick={() => startConfirm(tag)}
+                  disabled={justAdded}
                   aria-label={`Remove tag ${tag}`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)]"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   <CloseIcon className="h-3.5 w-3.5" />
                 </button>
