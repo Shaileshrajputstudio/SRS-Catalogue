@@ -1,5 +1,5 @@
 import "server-only";
-import { get, put } from "@vercel/blob";
+import { r2GetText, r2Put } from "./r2";
 import { blobSecretNamespace } from "./blobConfig";
 
 // The admin login password, stored as a small blob instead of a fixed
@@ -20,9 +20,8 @@ function passwordPathname(): string {
 
 export async function getAdminPassword(): Promise<string> {
   try {
-    const result = await get(passwordPathname(), { access: "public", useCache: false });
-    if (!result) return process.env.ADMIN_PASSWORD ?? "";
-    const text = await new Response(result.stream).text();
+    const text = await r2GetText(passwordPathname());
+    if (text === null) return process.env.ADMIN_PASSWORD ?? "";
     return text.trim();
   } catch (err) {
     // Blob not created yet (first deploy, before anyone's changed the
@@ -35,10 +34,5 @@ export async function getAdminPassword(): Promise<string> {
 }
 
 export async function setAdminPassword(newPassword: string): Promise<void> {
-  await put(passwordPathname(), newPassword, {
-    access: "public",
-    contentType: "text/plain",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+  await r2Put(passwordPathname(), newPassword, "text/plain");
 }

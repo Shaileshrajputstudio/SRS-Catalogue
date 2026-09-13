@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { list } from "@vercel/blob";
+import { r2List } from "./r2";
 import { encodeWebsiteLink, decodeWebsiteLink, type WebsiteLink } from "./websiteLink";
 
 // Server-only: reads BLOB_READ_WRITE_TOKEN, so this must only ever be
@@ -112,24 +112,24 @@ export function shareTag(a: string[], b: string[]): boolean {
 // per-request memo, not a persistent cache — dynamic = "force-dynamic"
 // still guarantees a fresh read on every new request.
 export const getBrochures = cache(async (): Promise<Brochure[]> => {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return [];
+  if (!process.env.R2_ACCOUNT_ID) return [];
 
   const [pdfList, thumbList, tagsList, categoryList, typeList] = await Promise.all([
-    list({ prefix: "brochures/", limit: 1000 }),
-    list({ prefix: "brochure-thumbs/", limit: 1000 }),
-    list({ prefix: TAGS_PREFIX, limit: 1000 }),
-    list({ prefix: CATEGORY_PREFIX, limit: 1000 }),
-    list({ prefix: TYPE_PREFIX, limit: 1000 }),
+    r2List("brochures/"),
+    r2List("brochure-thumbs/"),
+    r2List(TAGS_PREFIX),
+    r2List(CATEGORY_PREFIX),
+    r2List(TYPE_PREFIX),
   ]);
 
   const thumbById = new Map<string, string>();
-  for (const blob of thumbList.blobs) {
+  for (const blob of thumbList) {
     const match = blob.pathname.match(THUMB_RE);
     if (match) thumbById.set(match[1], blob.url);
   }
 
   const tagsById = new Map<string, string[]>();
-  for (const blob of tagsList.blobs) {
+  for (const blob of tagsList) {
     const match = blob.pathname.match(TAGS_RE);
     if (!match) continue;
     try {
@@ -141,7 +141,7 @@ export const getBrochures = cache(async (): Promise<Brochure[]> => {
   }
 
   const websiteLinkById = new Map<string, WebsiteLink>();
-  for (const blob of categoryList.blobs) {
+  for (const blob of categoryList) {
     const match = blob.pathname.match(CATEGORY_RE);
     if (!match) continue;
     const link = decodeWebsiteLink(match[2]);
@@ -149,13 +149,13 @@ export const getBrochures = cache(async (): Promise<Brochure[]> => {
   }
 
   const typeById = new Map<string, CatalogueType>();
-  for (const blob of typeList.blobs) {
+  for (const blob of typeList) {
     const match = blob.pathname.match(TYPE_RE);
     if (match) typeById.set(match[1], match[2] as CatalogueType);
   }
 
   const brochures: Brochure[] = [];
-  for (const blob of pdfList.blobs) {
+  for (const blob of pdfList) {
     const match = blob.pathname.match(PDF_RE);
     if (!match) continue;
     let title: string;

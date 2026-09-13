@@ -1,6 +1,6 @@
 import "server-only";
 import crypto from "crypto";
-import { get, put, del } from "@vercel/blob";
+import { r2GetText, r2Put, r2Del } from "./r2";
 import { blobSecretNamespace } from "./blobConfig";
 
 // A one-time reset token for the "Forgot password" flow, stored the same
@@ -21,21 +21,16 @@ type ResetToken = { token: string; expiresAt: number };
 export async function createResetToken(): Promise<string> {
   const token = crypto.randomBytes(32).toString("hex");
   const payload: ResetToken = { token, expiresAt: Date.now() + TOKEN_TTL_MS };
-  await put(tokenPathname(), JSON.stringify(payload), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+  await r2Put(tokenPathname(), JSON.stringify(payload), "application/json");
   return token;
 }
 
 export async function verifyResetToken(token: string): Promise<boolean> {
   if (!token) return false;
   try {
-    const result = await get(tokenPathname(), { access: "public", useCache: false });
-    if (!result) return false;
-    const { token: stored, expiresAt }: ResetToken = JSON.parse(await new Response(result.stream).text());
+    const text = await r2GetText(tokenPathname());
+    if (text === null) return false;
+    const { token: stored, expiresAt }: ResetToken = JSON.parse(text);
     return stored === token && Date.now() < expiresAt;
   } catch (err) {
     console.error("verifyResetToken failed", err);
@@ -48,7 +43,7 @@ export async function verifyResetToken(token: string): Promise<boolean> {
 // can't be replayed.
 export async function clearResetToken(): Promise<void> {
   try {
-    await del(tokenPathname());
+    await r2Del(tokenPathname());
   } catch {
     // Nothing to clear — fine.
   }

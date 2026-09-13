@@ -1,6 +1,6 @@
 "use server";
 
-import { del, list, put } from "@vercel/blob";
+import { r2Del, r2List, r2Put } from "@/lib/r2";
 import { revalidatePath } from "next/cache";
 import {
   buildThumbnailPathname,
@@ -24,20 +24,20 @@ export async function deleteBrochure(pdfPathname: string, id: string): Promise<v
   if (!pdfPathname.startsWith("brochures/")) {
     throw new Error("Invalid brochure.");
   }
-  // del() doesn't error when a path doesn't exist, so it's safe to always
-  // try the thumbnail (and any tags/category/type blob) too even for
-  // brochures that never got one.
+  // R2 delete doesn't error when a key doesn't exist, so it's safe to
+  // always try the thumbnail (and any tags/category/type object) too even
+  // for brochures that never got one.
   const [existingTags, existingCategory, existingType] = await Promise.all([
-    list({ prefix: `${TAGS_PREFIX}${id}--` }),
-    list({ prefix: `${CATEGORY_PREFIX}${id}--` }),
-    list({ prefix: `${TYPE_PREFIX}${id}--` }),
+    r2List(`${TAGS_PREFIX}${id}--`),
+    r2List(`${CATEGORY_PREFIX}${id}--`),
+    r2List(`${TYPE_PREFIX}${id}--`),
   ]);
   await Promise.all([
-    del(pdfPathname),
-    del(buildThumbnailPathname(id)),
-    ...existingTags.blobs.map((b) => del(b.pathname)),
-    ...existingCategory.blobs.map((b) => del(b.pathname)),
-    ...existingType.blobs.map((b) => del(b.pathname)),
+    r2Del(pdfPathname),
+    r2Del(buildThumbnailPathname(id)),
+    ...existingTags.map((b) => r2Del(b.pathname)),
+    ...existingCategory.map((b) => r2Del(b.pathname)),
+    ...existingType.map((b) => r2Del(b.pathname)),
   ]);
   revalidatePath("/");
 }
@@ -48,15 +48,11 @@ export async function deleteBrochure(pdfPathname: string, id: string): Promise<v
 export async function updateBrochureTags(id: string, rawTags: string[]): Promise<string[]> {
   const tags = normalizeTags(rawTags);
 
-  const existing = await list({ prefix: `${TAGS_PREFIX}${id}--` });
-  await Promise.all(existing.blobs.map((b) => del(b.pathname)));
+  const existing = await r2List(`${TAGS_PREFIX}${id}--`);
+  await Promise.all(existing.map((b) => r2Del(b.pathname)));
 
   if (tags.length > 0) {
-    await put(buildTagsPathname(id, tags), JSON.stringify({ tags }), {
-      access: "public",
-      contentType: "application/json",
-      addRandomSuffix: false,
-    });
+    await r2Put(buildTagsPathname(id, tags), JSON.stringify({ tags }), "application/json");
   }
 
   revalidatePath("/");
@@ -73,15 +69,11 @@ export async function updateBrochureWebsiteLink(id: string, rawSelection: string
   const options = await getWebsiteLinkOptions();
   const link = parseWebsiteLinkSelection(rawSelection, options);
 
-  const existing = await list({ prefix: `${CATEGORY_PREFIX}${id}--` });
-  await Promise.all(existing.blobs.map((b) => del(b.pathname)));
+  const existing = await r2List(`${CATEGORY_PREFIX}${id}--`);
+  await Promise.all(existing.map((b) => r2Del(b.pathname)));
 
   if (link) {
-    await put(buildWebsiteLinkPathname(id, link), JSON.stringify(link), {
-      access: "public",
-      contentType: "application/json",
-      addRandomSuffix: false,
-    });
+    await r2Put(buildWebsiteLinkPathname(id, link), JSON.stringify(link), "application/json");
   }
 
   revalidatePath("/");
@@ -96,14 +88,10 @@ export async function updateBrochureWebsiteLink(id: string, rawSelection: string
 export async function updateBrochureType(id: string, rawType: string): Promise<CatalogueType> {
   const type: CatalogueType = isCatalogueType(rawType) ? rawType : "general";
 
-  const existing = await list({ prefix: `${TYPE_PREFIX}${id}--` });
-  await Promise.all(existing.blobs.map((b) => del(b.pathname)));
+  const existing = await r2List(`${TYPE_PREFIX}${id}--`);
+  await Promise.all(existing.map((b) => r2Del(b.pathname)));
 
-  await put(buildTypePathname(id, type), JSON.stringify({ type }), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-  });
+  await r2Put(buildTypePathname(id, type), JSON.stringify({ type }), "application/json");
 
   revalidatePath("/");
   return type;

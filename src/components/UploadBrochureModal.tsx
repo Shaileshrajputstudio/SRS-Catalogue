@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { upload } from "@vercel/blob/client";
+import { uploadToR2 } from "@/lib/r2Client";
 import { buildBrochurePathname, buildThumbnailPathname, type Brochure, type CatalogueType } from "@/lib/brochures";
 import type { WebsiteLink, WebsiteLinkOptions } from "@/lib/websiteLink";
 import { renderFirstPageToPng } from "@/lib/pdfThumbnail";
@@ -131,9 +131,8 @@ export function UploadBrochureModal({
 
     try {
       setStatusText("Uploading…");
-      const blob = await upload(buildBrochurePathname(id, trimmedTitle), file, {
-        access: "public",
-        handleUploadUrl: "/api/brochures/upload",
+      const blob = await uploadToR2(buildBrochurePathname(id, trimmedTitle), file, {
+        contentType: "application/pdf",
         onUploadProgress: ({ percentage }) => setProgress(percentage),
       });
 
@@ -141,9 +140,8 @@ export function UploadBrochureModal({
       try {
         setStatusText("Generating cover thumbnail…");
         const thumbBlob = await renderFirstPageToPng(file);
-        const uploadedThumb = await upload(buildThumbnailPathname(id), thumbBlob, {
-          access: "public",
-          handleUploadUrl: "/api/brochures/upload",
+        const uploadedThumb = await uploadToR2(buildThumbnailPathname(id), thumbBlob, {
+          contentType: "image/png",
         });
         thumbnailUrl = uploadedThumb.url;
       } catch {
