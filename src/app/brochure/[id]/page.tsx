@@ -56,7 +56,7 @@ export default async function BrochurePage({
   const others = all.filter((b) => b.id !== id && shareTag(brochure.tags, b.tags)).slice(0, 8);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10 sm:py-14">
+    <div className="mx-auto max-w-4xl px-6 py-6 sm:py-8">
       <Image
         src="/brand/srs-logo.png"
         alt={studio.name}
@@ -64,12 +64,12 @@ export default async function BrochurePage({
         height={366}
         priority
         unoptimized
-        className="mb-10 h-9 w-auto sm:h-10"
+        className="mb-6 h-9 w-auto sm:h-10"
       />
 
       <section className="mb-16">
-        <h1 className="mb-4 text-3xl leading-tight sm:text-4xl">{brochure.title}</h1>
-        <p className="mb-8 max-w-xl text-[var(--ink)]/70">
+        <h1 className="mb-3 text-3xl leading-tight sm:text-4xl">{brochure.title}</h1>
+        <p className="mb-6 max-w-xl text-[var(--ink)]/70">
           A closer look at the {brochure.title} collection.
         </p>
 
