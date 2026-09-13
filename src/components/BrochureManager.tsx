@@ -3,8 +3,10 @@
 import { useMemo, useRef, useState } from "react";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { WebsiteLinkOptions } from "@/lib/websiteLink";
+import type { CatalogueTypeDef } from "@/lib/catalogueTypes";
 import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
+import { ManageTabsModal } from "@/components/ManageTabsModal";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
 import { Toast } from "@/components/Toast";
 
@@ -32,14 +34,26 @@ function EmptyLibraryIcon({ className = "h-7 w-7" }: { className?: string }) {
   );
 }
 
-// "All" isn't a real tab — every brochure has exactly one type, so these
-// four always partition the library completely.
-const TABS: { type: CatalogueType; label: string }[] = [
-  { type: "product", label: "Series" },
-  { type: "story", label: "Story" },
-  { type: "general", label: "General" },
-  { type: "item", label: "Product" },
-];
+function GearIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2.06 2.06 0 1 1-2.92 2.92l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56v.17a2.06 2.06 0 1 1-4.12 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2.06 2.06 0 1 1-2.92-2.92l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03h-.17a2.06 2.06 0 1 1 0-4.12h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2.06 2.06 0 1 1 2.92-2.92l.06.06a1.7 1.7 0 0 0 1.87.34h.08a1.7 1.7 0 0 0 1.03-1.56v-.17a2.06 2.06 0 1 1 4.12 0v.09a1.7 1.7 0 0 0 1.03 1.56h.08a1.7 1.7 0 0 0 1.87-.34l.06-.06a2.06 2.06 0 1 1 2.92 2.92l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03h.17a2.06 2.06 0 1 1 0 4.12h-.09a1.7 1.7 0 0 0-1.56 1.03Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// "All" isn't a real tab — every brochure has exactly one type, so
+// whatever's in catalogueTypes always partitions the library completely.
 
 // The whole admin homepage: the heading, the "+ Upload Brochure" CTA, and
 // the library itself all live in one client component so the CTA can sit
@@ -48,13 +62,19 @@ const TABS: { type: CatalogueType; label: string }[] = [
 export function BrochureManager({
   initialBrochures,
   websiteLinkOptions,
+  initialCatalogueTypes,
 }: {
   initialBrochures: Brochure[];
   websiteLinkOptions: WebsiteLinkOptions;
+  initialCatalogueTypes: CatalogueTypeDef[];
 }) {
   const [brochures, setBrochures] = useState(initialBrochures);
+  const [catalogueTypes, setCatalogueTypes] = useState(initialCatalogueTypes);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<CatalogueType>("product");
+  const [manageTabsOpen, setManageTabsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<CatalogueType>(
+    initialCatalogueTypes[0]?.key ?? "general",
+  );
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -73,15 +93,32 @@ export function BrochureManager({
   }, [brochures]);
 
   const countByType = useMemo(() => {
-    const counts: Record<CatalogueType, number> = { product: 0, story: 0, general: 0, item: 0 };
-    for (const b of brochures) counts[b.catalogueType]++;
+    const counts: Record<string, number> = Object.fromEntries(catalogueTypes.map((t) => [t.key, 0]));
+    for (const b of brochures) counts[b.catalogueType] = (counts[b.catalogueType] ?? 0) + 1;
     return counts;
-  }, [brochures]);
+  }, [brochures, catalogueTypes]);
 
   const visible = useMemo(
     () => brochures.filter((b) => b.catalogueType === activeTab),
     [brochures, activeTab],
   );
+
+  // Called after Manage Tabs adds/renames/reorders/deletes a tab — keeps
+  // this component's own state in sync without a full page reload, same
+  // pattern as handleUploaded/handleDeleted below.
+  function handleTypesChanged(next: CatalogueTypeDef[]) {
+    setCatalogueTypes(next);
+    if (!next.some((t) => t.key === activeTab)) {
+      setActiveTab(next[0]?.key ?? "general");
+    }
+  }
+
+  // Deleting a non-empty tab re-types its catalogues server-side (see
+  // deleteCatalogueType) — this mirrors that locally so the library view
+  // doesn't need a reload to reflect where they landed.
+  function handleBrochuresRetyped(fromKey: string, toKey: string) {
+    setBrochures((prev) => prev.map((b) => (b.catalogueType === fromKey ? { ...b, catalogueType: toKey } : b)));
+  }
 
   function handleUploaded(brochure: Brochure) {
     setBrochures((prev) => [brochure, ...prev]);
@@ -118,20 +155,28 @@ export function BrochureManager({
         </button>
       </div>
 
-      <div className="font-sans-ui mb-8 flex gap-1 border-y border-[var(--line)] py-1">
-        {TABS.map(({ type, label }) => (
+      <div className="font-sans-ui mb-8 flex flex-wrap items-center gap-1 border-y border-[var(--line)] py-1">
+        {catalogueTypes.map(({ key, label }) => (
           <button
-            key={type}
-            onClick={() => setActiveTab(type)}
+            key={key}
+            onClick={() => setActiveTab(key)}
             className={`rounded-full px-4 py-2 text-sm transition ${
-              activeTab === type
+              activeTab === key
                 ? "bg-[var(--ink)] text-white"
                 : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
             }`}
           >
-            {label} <span className={activeTab === type ? "text-white/60" : "text-[var(--ink)]/40"}>{countByType[type]}</span>
+            {label} <span className={activeTab === key ? "text-white/60" : "text-[var(--ink)]/40"}>{countByType[key] ?? 0}</span>
           </button>
         ))}
+        <button
+          onClick={() => setManageTabsOpen(true)}
+          aria-label="Manage tabs"
+          title="Manage tabs"
+          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--paper-2)]/60 hover:text-[var(--ink)]"
+        >
+          <GearIcon className="h-4 w-4" />
+        </button>
       </div>
 
       {visible.length === 0 ? (
@@ -142,7 +187,7 @@ export function BrochureManager({
           <p className="font-sans-ui mb-4 text-sm text-[var(--ink)]/50">
             {brochures.length === 0
               ? "Nothing here yet — the first catalogue starts the library."
-              : `No ${TABS.find((t) => t.type === activeTab)?.label.toLowerCase()} catalogues yet.`}
+              : `No ${catalogueTypes.find((t) => t.key === activeTab)?.label.toLowerCase()} catalogues yet.`}
           </p>
           <button
             onClick={() => setUploadOpen(true)}
@@ -179,8 +224,19 @@ export function BrochureManager({
         <UploadBrochureModal
           allTags={allTags}
           websiteLinkOptions={websiteLinkOptions}
+          catalogueTypes={catalogueTypes}
           onClose={() => setUploadOpen(false)}
           onUploaded={handleUploaded}
+        />
+      )}
+
+      {manageTabsOpen && (
+        <ManageTabsModal
+          catalogueTypes={catalogueTypes}
+          counts={countByType}
+          onClose={() => setManageTabsOpen(false)}
+          onTypesChange={handleTypesChanged}
+          onBrochuresRetyped={handleBrochuresRetyped}
         />
       )}
 

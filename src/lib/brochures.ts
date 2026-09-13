@@ -27,12 +27,15 @@ import { encodeWebsiteLink, decodeWebsiteLink, type WebsiteLink } from "./websit
 // isn't cleanly one or the other.
 //
 // The internal key and its display label have drifted apart for two of
-// these: "product" now displays as "Series" (renamed after "item" was
-// added below it, to leave room for a distinct "Product" tab), and
-// "item" is the newer type that actually displays as "Product" — see
-// CATALOGUE_TYPE_LABELS in UploadBrochureModal.tsx for the map.
-export type CatalogueType = "product" | "story" | "general" | "item";
-const CATALOGUE_TYPES: CatalogueType[] = ["product", "story", "general", "item"];
+// the built-in ones: "product" now displays as "Series" (renamed after
+// "item" was added, to leave room for a distinct "Product" tab), and
+// "item" is the one that actually displays as "Product". Since Manage
+// Tabs, the full set of types is config-driven, not fixed — see
+// lib/catalogueTypes.ts for the current list and label map, and
+// lib/catalogueTypesStore.ts for where it's persisted. This alias is
+// just for readability at call sites; it's a free-form slug string now,
+// not a real union.
+export type CatalogueType = string;
 
 export type Brochure = {
   id: string;
@@ -49,7 +52,7 @@ const PDF_RE = /^brochures\/([a-zA-Z0-9_-]+)--(.+)\.pdf$/;
 const THUMB_RE = /^brochure-thumbs\/([a-zA-Z0-9_-]+)\.png$/;
 const TAGS_RE = /^brochure-tags\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
 const CATEGORY_RE = /^brochure-category\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
-const TYPE_RE = /^brochure-type\/([a-zA-Z0-9_-]+)--(product|story|general|item)\.json$/;
+const TYPE_RE = /^brochure-type\/([a-zA-Z0-9_-]+)--([a-z0-9]+(?:-[a-z0-9]+)*)\.json$/;
 
 export const TAGS_PREFIX = "brochure-tags/";
 export const CATEGORY_PREFIX = "brochure-category/";
@@ -78,8 +81,14 @@ export function buildTypePathname(id: string, type: CatalogueType): string {
   return `${TYPE_PREFIX}${id}--${type}.json`;
 }
 
-export function isCatalogueType(value: string): value is CatalogueType {
-  return (CATALOGUE_TYPES as string[]).includes(value);
+// Was a closed-membership check against a fixed list; now that tabs are
+// config-driven (Manage Tabs), this only validates that a value is
+// shaped like a slug this app would ever generate itself — the pathname
+// character set, not "is this one of today's actual tabs". A value that
+// fails this falls back to "general" (see updateBrochureType) rather
+// than ever writing something unsafe into an R2 key.
+export function isCatalogueType(value: string): boolean {
+  return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value) && value.length <= 60;
 }
 
 // Trims, drops empties, and dedupes case-insensitively (keeping the first

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { studio } from "@/lib/studio";
 import { getBrochures } from "@/lib/brochures";
 import { getWebsiteLinkOptions } from "@/lib/websiteCategories";
+import { getCatalogueTypes } from "@/lib/catalogueTypesStore";
 import { BrochureManager } from "@/components/BrochureManager";
 import { HeaderMenu } from "@/components/HeaderMenu";
 
@@ -10,7 +11,11 @@ import { HeaderMenu } from "@/components/HeaderMenu";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [brochures, websiteLinkOptions] = await Promise.all([getBrochures(), getWebsiteLinkOptions()]);
+  const [brochures, websiteLinkOptions, catalogueTypes] = await Promise.all([
+    getBrochures(),
+    getWebsiteLinkOptions(),
+    getCatalogueTypes(),
+  ]);
 
   return (
     <>
@@ -36,7 +41,11 @@ export default async function AdminPage() {
           className="mb-4 h-[32px] w-auto sm:h-[37px]"
         />
 
-        <BrochureManager initialBrochures={brochures} websiteLinkOptions={websiteLinkOptions} />
+        <BrochureManager
+          initialBrochures={brochures}
+          websiteLinkOptions={websiteLinkOptions}
+          initialCatalogueTypes={catalogueTypes}
+        />
 
         <div className="font-sans-ui mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-6 text-xs text-[var(--ink)]/40">
           <p className="flex items-center gap-2.5">

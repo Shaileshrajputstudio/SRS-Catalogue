@@ -4,18 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { uploadToR2 } from "@/lib/r2Client";
 import { buildBrochurePathname, buildThumbnailPathname, type Brochure, type CatalogueType } from "@/lib/brochures";
 import type { WebsiteLink, WebsiteLinkOptions } from "@/lib/websiteLink";
+import { websiteLinkKindFor, type CatalogueTypeDef } from "@/lib/catalogueTypes";
 import { renderFirstPageToPng } from "@/lib/pdfThumbnail";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { updateBrochureTags, updateBrochureWebsiteLink, updateBrochureType } from "@/app/actions/brochures";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
-
-const CATALOGUE_TYPE_LABELS: Record<CatalogueType, string> = {
-  product: "Series",
-  story: "Story",
-  general: "General",
-  item: "Product",
-};
 
 function UploadCloudIcon({ className = "h-6 w-6" }: { className?: string }) {
   return (
@@ -52,11 +46,13 @@ function formatSize(bytes: number) {
 export function UploadBrochureModal({
   allTags,
   websiteLinkOptions,
+  catalogueTypes,
   onClose,
   onUploaded,
 }: {
   allTags: string[];
   websiteLinkOptions: WebsiteLinkOptions;
+  catalogueTypes: CatalogueTypeDef[];
   onClose: () => void;
   onUploaded: (brochure: Brochure) => void;
 }) {
@@ -116,10 +112,10 @@ export function UploadBrochureModal({
       return;
     }
     if (!catalogueType) {
-      setError("Choose a catalogue type — Series, Story, General, or Product.");
+      setError(`Choose a catalogue type — ${catalogueTypes.map((t) => t.label).join(", ")}.`);
       return;
     }
-    if (catalogueType !== "general" && !linkSelection) {
+    if (websiteLinkKindFor(catalogueType) && !linkSelection) {
       setError("Choose a website link — or “No Website Link” if it doesn't apply.");
       return;
     }
@@ -163,7 +159,7 @@ export function UploadBrochureModal({
       }
 
       let savedLink: WebsiteLink | null = null;
-      if (catalogueType !== "general") {
+      if (websiteLinkKindFor(catalogueType)) {
         try {
           setStatusText("Saving website link…");
           savedLink = await updateBrochureWebsiteLink(id, linkSelection);
@@ -241,23 +237,23 @@ export function UploadBrochureModal({
         <label className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
           Catalogue Type
         </label>
-        <div className="mb-5 grid grid-cols-4 gap-2">
-          {(Object.keys(CATALOGUE_TYPE_LABELS) as CatalogueType[]).map((t) => (
+        <div className="mb-5 flex flex-wrap gap-2">
+          {catalogueTypes.map((t) => (
             <button
-              key={t}
+              key={t.key}
               type="button"
               onClick={() => {
-                setCatalogueType(t);
+                setCatalogueType(t.key);
                 setLinkSelection("");
               }}
               disabled={isBusy}
               className={`font-sans-ui rounded-lg border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60 ${
-                catalogueType === t
+                catalogueType === t.key
                   ? "border-[var(--ink)] bg-[var(--ink)] text-white"
                   : "border-[var(--line)] bg-[#F6F3E8] text-[var(--ink)] hover:border-[var(--ink)]"
               }`}
             >
-              {CATALOGUE_TYPE_LABELS[t]}
+              {t.label}
             </button>
           ))}
         </div>
@@ -269,7 +265,7 @@ export function UploadBrochureModal({
           <TagInput tags={tags} onChange={setTags} suggestions={allTags} maxTags={1} />
         </div>
 
-        {(catalogueType === "product" || catalogueType === "story" || catalogueType === "item") && (
+        {catalogueType && websiteLinkKindFor(catalogueType) && (
           <>
             <label
               htmlFor="brochure-category"
@@ -290,7 +286,7 @@ export function UploadBrochureModal({
                   Choose a website link…
                 </option>
                 <option value="_none_">No Website Link</option>
-                {(catalogueType === "product" || catalogueType === "item") && (
+                {websiteLinkKindFor(catalogueType) === "category" && (
                   <optgroup label="Product Category">
                     {websiteLinkOptions.categories.map((c) => (
                       <option key={c} value={`category|${c}`}>
@@ -299,7 +295,7 @@ export function UploadBrochureModal({
                     ))}
                   </optgroup>
                 )}
-                {catalogueType === "story" && (
+                {websiteLinkKindFor(catalogueType) === "story" && (
                   <optgroup label="Story">
                     {websiteLinkOptions.stories.map((s) => (
                       <option key={s.slug} value={`story|${s.slug}`}>
