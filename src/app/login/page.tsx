@@ -29,7 +29,7 @@ export default async function AdminLoginPage({
         />
         <p className="font-sans-ui mb-6 flex items-center gap-2 text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-          Studio
+          SRS Catalogue Hub
         </p>
         {reset === "success" && (
           <p className="font-sans-ui mb-4 rounded-lg bg-[var(--footer-bg)] px-4 py-3 text-sm text-[var(--ink)]">
