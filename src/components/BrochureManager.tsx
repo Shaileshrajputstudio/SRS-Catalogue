@@ -88,7 +88,7 @@ export function BrochureManager({
           onClick={() => setUploadOpen(true)}
           className="font-sans-ui shrink-0 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
         >
-          + Upload Brochure
+          + Upload Catalogue
         </button>
       </div>
 
@@ -122,7 +122,7 @@ export function BrochureManager({
             onClick={() => setUploadOpen(true)}
             className="font-sans-ui inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
           >
-            Upload {brochures.length === 0 ? "your first brochure" : "a brochure"}
+            Upload {brochures.length === 0 ? "your first catalogue" : "a catalogue"}
             <ArrowForwardIcon className="h-3.5 w-3.5" />
           </button>
         </div>

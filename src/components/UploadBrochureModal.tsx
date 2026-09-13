@@ -109,7 +109,7 @@ export function UploadBrochureModal({
 
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Give the brochure a title.");
+      setError("Give the catalogue a title.");
       return;
     }
     if (!catalogueType) {
@@ -205,7 +205,7 @@ export function UploadBrochureModal({
         className="w-full max-w-md rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between gap-3">
-          <h2 className="text-xl text-[var(--ink)]">Upload Brochure</h2>
+          <h2 className="text-xl text-[var(--ink)]">Upload Catalogue</h2>
           <button
             type="button"
             onClick={onClose}

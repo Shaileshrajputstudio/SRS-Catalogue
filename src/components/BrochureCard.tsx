@@ -139,7 +139,7 @@ export function BrochureCard({
             e.stopPropagation();
             setMenuOpen((v) => !v);
           }}
-          aria-label="Brochure options"
+          aria-label="Catalogue options"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65"
         >
           <DotsIcon className="h-4 w-4" />
@@ -191,7 +191,7 @@ export function BrochureCard({
               className="mt-4 flex w-full items-center gap-2 rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
             >
               <TrashIcon className="h-3.5 w-3.5" />
-              Remove this brochure
+              Remove this catalogue
             </button>
           </div>
         )}
@@ -212,7 +212,7 @@ export function BrochureCard({
             }}
             className="font-sans-ui w-full max-w-sm rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
           >
-            <h3 className="mb-2 text-lg text-[var(--ink)]">Remove brochure?</h3>
+            <h3 className="mb-2 text-lg text-[var(--ink)]">Remove catalogue?</h3>
             <p className="mb-5 text-sm text-[var(--ink)]/70">
               Remove &ldquo;{brochure.title}&rdquo;? This can&apos;t be undone.
             </p>
