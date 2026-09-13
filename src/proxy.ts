@@ -10,6 +10,11 @@ const PUBLIC_PREFIXES = [
   "/brand/",
   "/fonts/",
   "/favicon",
+  "/icon.png",
+  "/icons/",
+  "/apple-touch-icon.png",
+  "/manifest.webmanifest",
+  "/pdf.worker.min.mjs",
 ];
 
 // Client-facing routes (a brochure link a client actually opens) are

@@ -7,6 +7,14 @@ import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
 
+function PlusIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function EmptyLibraryIcon({ className = "h-7 w-7" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
@@ -74,7 +82,7 @@ export function BrochureManager({
   }
 
   return (
-    <div>
+    <div className="pb-24 sm:pb-0">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="mb-2 max-w-xl text-2xl leading-tight text-[var(--ink)] sm:text-3xl">
@@ -86,7 +94,7 @@ export function BrochureManager({
         </div>
         <button
           onClick={() => setUploadOpen(true)}
-          className="font-sans-ui shrink-0 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
+          className="font-sans-ui hidden shrink-0 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)] sm:inline-flex"
         >
           + Upload Catalogue
         </button>
@@ -139,6 +147,15 @@ export function BrochureManager({
           ))}
         </div>
       )}
+
+      <button
+        onClick={() => setUploadOpen(true)}
+        aria-label="Upload Catalogue"
+        style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem))" }}
+        className="fixed right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--ink)] text-white shadow-lg transition active:scale-95 sm:hidden"
+      >
+        <PlusIcon className="h-6 w-6" />
+      </button>
 
       {uploadOpen && (
         <UploadBrochureModal

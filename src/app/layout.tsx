@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Duru_Sans } from "next/font/google";
 import "./globals.css";
@@ -36,6 +36,18 @@ export const metadata: Metadata = {
   // Brochure links are shared privately (WhatsApp, email) with specific
   // clients — not meant to turn up in search results.
   robots: { index: false, follow: false },
+  manifest: "/manifest.webmanifest",
+  icons: { apple: "/apple-touch-icon.png" },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Catalogue Hub",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1E1E1E",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

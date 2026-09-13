@@ -30,13 +30,15 @@ function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
+      className="animate-backdrop-in fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-4 sm:py-8"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="font-sans-ui w-full max-w-sm rounded-2xl bg-[var(--paper)] p-6 text-left shadow-2xl"
+        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        className="animate-sheet-up font-sans-ui w-full max-w-sm rounded-t-2xl bg-[var(--paper)] p-6 text-left shadow-2xl sm:rounded-2xl"
       >
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--ink)]/15 sm:hidden" />
         <div className="mb-5 flex items-start justify-between gap-3">
           <h2 className="text-lg text-[var(--ink)]">Change Password</h2>
           <button

@@ -87,3 +87,39 @@ body {
 .animate-fade-up {
   animation: srs-fade-up 0.6s ease forwards;
 }
+
+/* Every modal/popup in the admin tool slides up from the bottom like a
+   native action sheet on mobile (where a centered dialog with margins
+   around it reads as "a website popup", not "an app"), and fades/scales
+   in as a normal centered dialog from `sm:` up. See ModalSheet.tsx. */
+@keyframes srs-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes srs-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-sheet-up {
+  animation: srs-sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (min-width: 640px) {
+  .animate-sheet-up {
+    animation: srs-fade-up 0.18s ease;
+  }
+}
+
+.animate-backdrop-in {
+  animation: srs-backdrop-in 0.2s ease;
+}

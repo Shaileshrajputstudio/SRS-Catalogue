@@ -15,7 +15,10 @@ export default async function AdminPage() {
 
   return (
     <>
-      <div className="font-sans-ui sticky top-0 z-40 flex items-center justify-between bg-[var(--ink)] px-6 py-2 text-sm text-white">
+      <div
+        style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        className="font-sans-ui sticky top-0 z-40 flex items-center justify-between bg-[var(--ink)] px-6 py-2 text-sm text-white"
+      >
         <span className="flex items-center gap-2 tracking-[0.15em] uppercase">
           <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
           <span className="sm:hidden">SRS Hub</span>

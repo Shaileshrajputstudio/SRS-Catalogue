@@ -198,15 +198,17 @@ export function UploadBrochureModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
+      className="animate-backdrop-in fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-4 sm:py-8"
       onClick={isBusy ? undefined : onClose}
     >
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
         noValidate
-        className="w-full max-w-md rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
+        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        className="animate-sheet-up max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-[var(--paper)] p-6 shadow-2xl sm:max-h-[85vh] sm:rounded-2xl"
       >
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--ink)]/15 sm:hidden" />
         <div className="mb-5 flex items-start justify-between gap-3">
           <h2 className="text-xl text-[var(--ink)]">Upload Catalogue</h2>
           <button

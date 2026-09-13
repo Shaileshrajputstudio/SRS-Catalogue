@@ -39,13 +39,15 @@ export function LogoutButton() {
 
       {confirming && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          className="animate-backdrop-in fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-4"
           onClick={() => setConfirming(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="font-sans-ui w-full max-w-sm rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
+            style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            className="animate-sheet-up font-sans-ui w-full max-w-sm rounded-t-2xl bg-[var(--paper)] p-6 shadow-2xl sm:rounded-2xl"
           >
+            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--ink)]/15 sm:hidden" />
             <h3 className="mb-2 text-lg text-[var(--ink)]">Log out?</h3>
             <p className="mb-5 text-sm text-[var(--ink)]/70">You&apos;ll need your password to sign back in.</p>
             <div className="flex gap-3">

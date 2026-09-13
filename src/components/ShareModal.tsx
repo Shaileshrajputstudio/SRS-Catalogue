@@ -134,11 +134,11 @@ export function ShareModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
+      className="animate-backdrop-in fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-4 sm:py-8"
       onClick={onClose}
     >
       <div
-        className="flex h-[75vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-[var(--paper)] shadow-2xl sm:flex-row"
+        className="animate-sheet-up flex h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl bg-[var(--paper)] shadow-2xl sm:h-[75vh] sm:flex-row sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left — a brand-styled preview (own page controls, no native PDF chrome). */}
@@ -147,7 +147,11 @@ export function ShareModal({
         </div>
 
         {/* Right — link, message, send. */}
-        <div className="flex w-full flex-1 flex-col overflow-y-auto p-6 sm:w-[380px] sm:flex-none">
+        <div
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+          className="flex w-full flex-1 flex-col overflow-y-auto p-6 sm:w-[380px] sm:flex-none"
+        >
+          <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-[var(--ink)]/15 sm:hidden" />
           <div className="mb-5 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-sans-ui mb-1 text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
