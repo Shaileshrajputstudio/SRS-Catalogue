@@ -113,11 +113,11 @@ export function BrochureCard({
           )}
 
           {tags.length > 0 && (
-            <div className="font-sans-ui pointer-events-none absolute top-2 left-2 flex max-w-[calc(100%-3.5rem)] flex-wrap gap-1">
+            <div className="font-sans-ui pointer-events-none absolute right-2 bottom-2 flex max-w-[calc(100%-1rem)] flex-wrap justify-end gap-1">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm"
+                  className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--ink)] shadow-sm"
                 >
                   {tag}
                 </span>
