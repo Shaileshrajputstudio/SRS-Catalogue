@@ -2,18 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
-import type { Brochure, CatalogueType } from "@/lib/brochures";
+import type { Brochure } from "@/lib/brochures";
 import { buildBrochurePathname } from "@/lib/brochures";
 import { deleteBrochure, updateBrochureTags } from "@/app/actions/brochures";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
-
-const CATALOGUE_TYPE_LABELS: Record<CatalogueType, string> = {
-  product: "Product",
-  story: "Story",
-  general: "General",
-};
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -159,12 +153,6 @@ export function BrochureCard({
             }}
             className="font-sans-ui absolute top-full right-0 z-20 mt-2 w-72 rounded-xl border border-[var(--line)] bg-[var(--paper)] p-4 text-left shadow-2xl"
           >
-            <label className="mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
-              Catalogue Type
-            </label>
-            <p className="mb-1 text-sm text-[var(--ink)]">{CATALOGUE_TYPE_LABELS[brochure.catalogueType]}</p>
-            <p className="mb-4 text-xs text-[var(--ink)]/50">Set at upload — not editable here.</p>
-
             <label className="mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Tags
             </label>
