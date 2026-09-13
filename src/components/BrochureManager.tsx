@@ -180,9 +180,9 @@ export function BrochureManager({
           onClick={() => setManageTabsOpen(true)}
           aria-label="Manage tabs"
           title="Manage tabs"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--paper-2)]/60 hover:text-[var(--ink)]"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--paper-2)]/60 hover:text-[var(--ink)]"
         >
-          <GearIcon className="h-[18px] w-[18px]" />
+          <GearIcon className="h-5 w-5" />
         </button>
       </div>
 

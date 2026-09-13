@@ -64,9 +64,10 @@ export function HeaderMenu() {
             their modal state could render — killing the click. Outside
             click / Escape (above) are the only ways this closes. */}
         {open && (
-          <div className="animate-fade-up absolute top-full right-0 z-50 mt-2 flex w-52 flex-col gap-4 rounded-xl bg-[var(--ink)] p-4 shadow-2xl">
-            <ChangePasswordButton />
-            <LogoutButton />
+          <div className="animate-fade-up absolute top-full right-0 z-50 mt-2 flex w-52 flex-col overflow-hidden rounded-xl bg-[var(--ink)] py-1 shadow-2xl">
+            <ChangePasswordButton className="w-full px-4 py-3.5 text-left font-medium text-white/70 transition hover:bg-white/5 hover:text-white" />
+            <div className="mx-4 border-t border-white/10" />
+            <LogoutButton className="w-full px-4 py-3.5 text-left font-medium text-white/70 transition hover:bg-white/5 hover:text-white" />
           </div>
         )}
       </div>

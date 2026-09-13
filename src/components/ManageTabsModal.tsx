@@ -216,24 +216,24 @@ export function ManageTabsModal({
             {catalogueTypes.map((t, idx) => (
               <div key={t.key} className="rounded-xl border border-[var(--line)] bg-[#F6F3E8]/60 p-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex shrink-0 flex-col">
+                  <div className="flex shrink-0 flex-col gap-0.5">
                     <button
                       type="button"
                       disabled={busy || idx === 0}
                       onClick={() => move(t.key, -1)}
                       aria-label={`Move ${t.label} up`}
-                      className="flex h-6 w-6 items-center justify-center text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-20 disabled:hover:bg-transparent"
                     >
-                      <ChevronUpIcon />
+                      <ChevronUpIcon className="h-5 w-5" />
                     </button>
                     <button
                       type="button"
                       disabled={busy || idx === catalogueTypes.length - 1}
                       onClick={() => move(t.key, 1)}
                       aria-label={`Move ${t.label} down`}
-                      className="flex h-6 w-6 items-center justify-center text-[var(--ink)]/40 transition hover:text-[var(--ink)] disabled:opacity-20"
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-20 disabled:hover:bg-transparent"
                     >
-                      <ChevronDownIcon />
+                      <ChevronDownIcon className="h-5 w-5" />
                     </button>
                   </div>
 
@@ -278,9 +278,9 @@ export function ManageTabsModal({
                         onClick={() => startRename(t)}
                         disabled={busy}
                         aria-label={`Rename ${t.label}`}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-40"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:opacity-40"
                       >
-                        <PencilIcon />
+                        <PencilIcon className="h-5 w-5" />
                       </button>
                       <button
                         type="button"
@@ -288,9 +288,9 @@ export function ManageTabsModal({
                         disabled={busy || catalogueTypes.length <= 1}
                         aria-label={`Delete ${t.label}`}
                         title={catalogueTypes.length <= 1 ? "At least one tab has to stay" : undefined}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/40 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
                       >
-                        <TrashIcon />
+                        <TrashIcon className="h-5 w-5" />
                       </button>
                     </>
                   )}

@@ -124,7 +124,7 @@ function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
 // A centered modal (like UploadBrochureModal), not an anchored dropdown
 // like LogoutButton — three fields read better as a dialog than a corner
 // popover.
-export function ChangePasswordButton() {
+export function ChangePasswordButton({ className }: { className?: string } = {}) {
   const [open, setOpen] = useState(false);
   useBodyScrollLock(open);
 
@@ -133,7 +133,7 @@ export function ChangePasswordButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="font-medium text-white/70 transition hover:text-white"
+        className={className ?? "font-medium text-white/70 transition hover:text-white"}
       >
         Change password
       </button>

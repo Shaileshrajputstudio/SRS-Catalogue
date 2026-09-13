@@ -94,50 +94,59 @@ export function TagInput({
 
   return (
     <div>
-      <div className="flex min-h-[42px] flex-wrap items-center gap-1.5">
+      <div className="flex min-h-[48px] flex-wrap items-center gap-1.5">
         {tags.map((tag) => {
           const confirming = confirmingTag === tag;
-          return (
-            <span
-              key={tag}
-              className={`font-sans-ui inline-flex items-center gap-1 rounded-full border py-1 pl-3 text-xs transition-colors ${
-                confirming
-                  ? "border-red-200 bg-red-50 pr-1 text-red-700"
-                  : "border-[var(--line)] bg-[#F6F3E8]/70 pr-1.5 text-[var(--ink)]"
-              }`}
-            >
-              {confirming ? "Remove?" : tag}
-              {confirming ? (
-                <span className="ml-0.5 flex items-center gap-0.5">
+          // Confirming gets its own full-width bar rather than trying to
+          // cram a "Remove?" label and two buttons into the same small
+          // pill the resting chip uses — that read as cramped and made
+          // the confirm/cancel targets small. This spells out which tag
+          // and gives both buttons real touch-target size with a clear
+          // gap between them.
+          if (confirming) {
+            return (
+              <div
+                key={tag}
+                className="font-sans-ui flex w-full items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 py-1.5 pr-1.5 pl-4"
+              >
+                <span className="text-sm font-medium text-red-700">Remove &ldquo;{tag}&rdquo;?</span>
+                <span className="flex shrink-0 items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => removeTag(tag)}
                     disabled={!confirmReady}
                     aria-label={`Confirm remove tag ${tag}`}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 transition-colors hover:bg-red-100 hover:text-red-800 disabled:cursor-not-allowed disabled:text-red-300 disabled:hover:bg-transparent"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-red-600 transition-colors hover:bg-red-100 hover:text-red-800 disabled:cursor-not-allowed disabled:text-red-300 disabled:hover:bg-transparent"
                   >
-                    <CheckIcon className="h-4 w-4" />
+                    <CheckIcon className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
                     onClick={cancelConfirm}
                     aria-label="Cancel"
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--ink)]/50 transition-colors hover:bg-[var(--ink)]/10 hover:text-[var(--ink)]"
                   >
-                    <CloseIcon className="h-4 w-4" />
+                    <CloseIcon className="h-5 w-5" />
                   </button>
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => startConfirm(tag)}
-                  disabled={justAdded}
-                  aria-label={`Remove tag ${tag}`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <CloseIcon className="h-3.5 w-3.5" />
-                </button>
-              )}
+              </div>
+            );
+          }
+          return (
+            <span
+              key={tag}
+              className="font-sans-ui inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[#F6F3E8]/70 py-2 pr-2 pl-4 text-sm text-[var(--ink)]"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => startConfirm(tag)}
+                disabled={justAdded}
+                aria-label={`Remove tag ${tag}`}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--ink)]/40 transition-colors hover:bg-[var(--ink)]/5 hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <CloseIcon className="h-4 w-4" />
+              </button>
             </span>
           );
         })}
