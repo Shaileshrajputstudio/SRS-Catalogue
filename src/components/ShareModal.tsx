@@ -74,7 +74,7 @@ export function ShareModal({
     const fullUrl = `${window.location.origin}/brochure/${brochure.id}`;
     setUrl(fullUrl);
     setMessage(
-      `Hi, sharing the ${brochure.title} catalogue from Shailesh Rajput Studio.\n\nTake a look whenever suits you — happy to talk through any piece that catches your eye.\n\nRegards,\nTeam SRS`,
+      `Hi\n\nSharing the ${brochure.title} catalogue from Shailesh Rajput Studio. Take a look whenever suits you. Happy to talk through any piece that catches your eye.\n\nRegards,\nTeam SRS`,
     );
     setCopied(false);
   }, [brochure]);

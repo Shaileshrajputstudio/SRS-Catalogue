@@ -35,7 +35,7 @@ function EmptyLibraryIcon({ className = "h-7 w-7" }: { className?: string }) {
 // "All" isn't a real tab — every brochure has exactly one type, so these
 // three always partition the library completely.
 const TABS: { type: CatalogueType; label: string }[] = [
-  { type: "product", label: "Product" },
+  { type: "product", label: "Series" },
   { type: "story", label: "Story" },
   { type: "general", label: "General" },
 ];

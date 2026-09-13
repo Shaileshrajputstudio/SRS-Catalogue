@@ -89,7 +89,7 @@ export function BrochureCard({
   return (
     <div className="group relative">
       <button type="button" onClick={() => setShareOpen(true)} className="block w-full text-left">
-        <div className="relative mb-2 flex aspect-[297/210] items-center justify-center overflow-hidden rounded-xl border border-[var(--line)] bg-white">
+        <div className="relative mb-2 flex aspect-[297/210] items-center justify-center overflow-hidden rounded-xl border border-[var(--line)] bg-white shadow-sm transition-shadow duration-300 group-hover:shadow-md">
           {brochure.thumbnailUrl ? (
             <Image
               src={brochure.thumbnailUrl}
@@ -97,7 +97,7 @@ export function BrochureCard({
               width={800}
               height={566}
               unoptimized
-              className="h-full w-full object-cover transition group-hover:opacity-80"
+              className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
             />
           ) : (
             <PdfIcon className="h-10 w-10 text-[var(--line)]" />

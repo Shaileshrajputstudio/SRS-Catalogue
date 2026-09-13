@@ -11,7 +11,7 @@ import { updateBrochureTags, updateBrochureWebsiteLink, updateBrochureType } fro
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 const CATALOGUE_TYPE_LABELS: Record<CatalogueType, string> = {
-  product: "Product",
+  product: "Series",
   story: "Story",
   general: "General",
 };
@@ -115,7 +115,7 @@ export function UploadBrochureModal({
       return;
     }
     if (!catalogueType) {
-      setError("Choose a catalogue type — Product, Story, or General.");
+      setError("Choose a catalogue type — Series, Story, or General.");
       return;
     }
     if (catalogueType !== "general" && !linkSelection) {

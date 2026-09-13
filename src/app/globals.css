@@ -8,6 +8,14 @@ button:not(:disabled),
   cursor: pointer;
 }
 
+/* TagInput's <input list="..."> gets a native dropdown-arrow affordance
+   in Chromium — reads as an unstyled leftover browser control next to
+   the deliberate "Apply" action beside it, so hide it. Datalist
+   suggestions still work when typing; this only removes the icon. */
+.tag-input-no-indicator::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
 :root {
   /* SRS foundational palette — matches the main studio website exactly */
   --ink: #1e1e1e; /* Carbon Black */
