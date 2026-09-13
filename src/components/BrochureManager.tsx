@@ -1,11 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { WebsiteLinkOptions } from "@/lib/websiteLink";
 import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
+import { Toast } from "@/components/Toast";
+
+// A toast is visible for 2.6s (matches the CSS animation in
+// globals.css) — showToast clears any still-running timer first so a
+// second toast firing quickly doesn't get cut short by the first one's
+// timeout.
+const TOAST_DURATION_MS = 2600;
 
 function PlusIcon({ className = "h-6 w-6" }: { className?: string }) {
   return (
@@ -47,6 +54,14 @@ export function BrochureManager({
   const [brochures, setBrochures] = useState(initialBrochures);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CatalogueType>("product");
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(message: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
+  }
 
   // Every distinct tag already in use, for the tag-input's suggestions —
   // recomputed whenever the library changes.
@@ -71,10 +86,12 @@ export function BrochureManager({
     setBrochures((prev) => [brochure, ...prev]);
     setUploadOpen(false);
     setActiveTab(brochure.catalogueType);
+    showToast(`"${brochure.title}" uploaded`);
   }
 
-  function handleDeleted(id: string) {
+  function handleDeleted(id: string, title: string) {
     setBrochures((prev) => prev.filter((b) => b.id !== id));
+    showToast(`"${title}" removed`);
   }
 
   function handleTagsSaved(id: string, tags: string[]) {
@@ -165,6 +182,8 @@ export function BrochureManager({
           onUploaded={handleUploaded}
         />
       )}
+
+      {toast && <Toast key={toast} message={toast} />}
     </div>
   );
 }

@@ -50,7 +50,7 @@ export function BrochureCard({
 }: {
   brochure: Brochure;
   allTags: string[];
-  onDeleted: (id: string) => void;
+  onDeleted: (id: string, title: string) => void;
   onTagsSaved: (id: string, tags: string[]) => void;
 }) {
   const [shareOpen, setShareOpen] = useState(false);
@@ -82,7 +82,7 @@ export function BrochureCard({
   function confirmRemove() {
     startDeleteTransition(async () => {
       await deleteBrochure(buildBrochurePathname(brochure.id, brochure.title), brochure.id);
-      onDeleted(brochure.id);
+      onDeleted(brochure.id, brochure.title);
     });
   }
 

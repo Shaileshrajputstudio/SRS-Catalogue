@@ -123,3 +123,26 @@ body {
 .animate-backdrop-in {
   animation: srs-backdrop-in 0.2s ease;
 }
+
+/* One animation covers the toast's whole lifecycle — enter, hold, exit —
+   so a single setTimeout in the component matching this duration is
+   enough; no separate exit-transition state to manage. */
+@keyframes srs-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  8%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+.animate-toast {
+  animation: srs-toast 2.6s ease forwards;
+}
