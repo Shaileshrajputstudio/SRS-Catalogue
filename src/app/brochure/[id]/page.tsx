@@ -69,25 +69,11 @@ export default async function BrochurePage({
 
       <section className="mb-16">
         <h1 className="mb-3 text-3xl leading-tight sm:text-4xl">{brochure.title}</h1>
-        <p className="mb-6 max-w-xl text-[var(--ink)]/70">
+        <p className="mb-5 max-w-xl text-[var(--ink)]/70">
           A closer look at the {brochure.title} collection.
         </p>
 
-        {brochure.thumbnailUrl && (
-          <div className="mb-8 overflow-hidden rounded-2xl border border-[var(--line)] bg-white">
-            <Image
-              src={brochure.thumbnailUrl}
-              alt={brochure.title}
-              width={1200}
-              height={849}
-              unoptimized
-              className="h-auto w-full object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <a
             href={brochure.url}
             target="_blank"
@@ -108,6 +94,20 @@ export default async function BrochurePage({
             </a>
           )}
         </div>
+
+        {brochure.thumbnailUrl && (
+          <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white">
+            <Image
+              src={brochure.thumbnailUrl}
+              alt={brochure.title}
+              width={1200}
+              height={849}
+              unoptimized
+              className="h-auto w-full object-cover"
+              priority
+            />
+          </div>
+        )}
       </section>
 
       {others.length > 0 && (
