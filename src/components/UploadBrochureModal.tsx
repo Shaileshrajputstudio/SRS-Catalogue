@@ -204,6 +204,7 @@ export function UploadBrochureModal({
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
+        noValidate
         className="w-full max-w-md rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between gap-3">
@@ -265,7 +266,7 @@ export function UploadBrochureModal({
           <TagInput tags={tags} onChange={setTags} suggestions={allTags} maxTags={1} />
         </div>
 
-        {catalogueType !== "general" && (
+        {(catalogueType === "product" || catalogueType === "story") && (
           <>
             <label
               htmlFor="brochure-category"
