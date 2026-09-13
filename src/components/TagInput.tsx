@@ -64,7 +64,7 @@ export function TagInput({
         }}
         onBlur={commit}
         placeholder="Add a tag and press Enter"
-        className="font-sans-ui w-full rounded-lg border border-[var(--line)] bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+        className="font-sans-ui w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
       />
       <datalist id={listId}>
         {suggestions

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { studio } from "@/lib/studio";
+import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 
 // Next's default 404 is plain black-on-white with no branding — a client
 // clicking a stale or mistyped brochure link would land on it. This gives
@@ -30,9 +31,10 @@ export default function NotFound() {
       <Link
         href={studio.website}
         target="_blank"
-        className="font-sans-ui rounded-full bg-[var(--ink)] px-6 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
+        className="font-sans-ui inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-6 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
       >
-        Visit full website ↗
+        Visit full website
+        <ArrowOutwardIcon className="h-3.5 w-3.5" />
       </Link>
     </div>
   );

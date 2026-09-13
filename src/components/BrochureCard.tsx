@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import { buildBrochurePathname } from "@/lib/brochures";
-import { deleteBrochure, updateBrochureTags, updateBrochureType } from "@/app/actions/brochures";
+import { deleteBrochure, updateBrochureTags } from "@/app/actions/brochures";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
@@ -52,21 +52,17 @@ export function BrochureCard({
   allTags,
   onDeleted,
   onTagsSaved,
-  onTypeSaved,
 }: {
   brochure: Brochure;
   allTags: string[];
   onDeleted: (id: string) => void;
   onTagsSaved: (id: string, tags: string[]) => void;
-  onTypeSaved: (id: string, type: CatalogueType) => void;
 }) {
   const [shareOpen, setShareOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [tags, setTags] = useState(brochure.tags);
   const [tagsDirty, setTagsDirty] = useState(false);
   const [isSavingTags, startTagsTransition] = useTransition();
-  const [catalogueType, setCatalogueType] = useState(brochure.catalogueType);
-  const [isSavingType, startTypeTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -95,15 +91,6 @@ export function BrochureCard({
       setTags(saved);
       setTagsDirty(false);
       onTagsSaved(brochure.id, saved);
-    });
-  }
-
-  function changeType(next: CatalogueType) {
-    setCatalogueType(next);
-    startTypeTransition(async () => {
-      const saved = await updateBrochureType(brochure.id, next);
-      setCatalogueType(saved);
-      onTypeSaved(brochure.id, saved);
     });
   }
 
@@ -148,16 +135,7 @@ export function BrochureCard({
         <p className="font-sans-ui text-xs font-medium text-[var(--ink)]/50">{formatDate(brochure.uploadedAt)}</p>
       </button>
 
-      {shareOpen && (
-        <ShareModal
-          brochure={brochure}
-          onClose={() => setShareOpen(false)}
-          onDeleted={() => {
-            setShareOpen(false);
-            onDeleted(brochure.id);
-          }}
-        />
-      )}
+      {shareOpen && <ShareModal brochure={brochure} onClose={() => setShareOpen(false)} />}
 
       <div ref={menuRef} className="absolute top-2 right-2">
         <button
@@ -184,23 +162,8 @@ export function BrochureCard({
             <label className="mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Catalogue Type
             </label>
-            <div className="mb-4 grid grid-cols-3 gap-1.5">
-              {(Object.keys(CATALOGUE_TYPE_LABELS) as CatalogueType[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => changeType(t)}
-                  disabled={isSavingType}
-                  className={`rounded-lg border px-2 py-2 text-xs font-medium transition disabled:opacity-60 ${
-                    catalogueType === t
-                      ? "border-[var(--ink)] bg-[var(--ink)] text-white"
-                      : "border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--ink)]"
-                  }`}
-                >
-                  {CATALOGUE_TYPE_LABELS[t]}
-                </button>
-              ))}
-            </div>
+            <p className="mb-1 text-sm text-[var(--ink)]">{CATALOGUE_TYPE_LABELS[brochure.catalogueType]}</p>
+            <p className="mb-4 text-xs text-[var(--ink)]/50">Set at upload — not editable here.</p>
 
             <label className="mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Tags
@@ -269,7 +232,7 @@ export function BrochureCard({
               <button
                 onClick={() => setConfirmingRemove(false)}
                 disabled={isDeleting}
-                className="flex-1 rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
+                className="flex-1 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
               >
                 Cancel
               </button>

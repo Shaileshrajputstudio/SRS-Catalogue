@@ -49,7 +49,7 @@ export default async function AdminLoginPage({
             type="password"
             name="password"
             autoFocus
-            className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+            className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
           />
           {error && (
             <p className="font-sans-ui mb-4 text-sm text-red-800">

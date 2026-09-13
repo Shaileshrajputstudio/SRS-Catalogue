@@ -82,7 +82,7 @@ export function ChangePasswordButton() {
                   placeholder="Current password"
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-lg border border-[var(--line)] bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+                  className="w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
                 />
                 <input
                   type="password"
@@ -91,7 +91,7 @@ export function ChangePasswordButton() {
                   required
                   minLength={6}
                   autoComplete="new-password"
-                  className="w-full rounded-lg border border-[var(--line)] bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+                  className="w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
                 />
                 <input
                   type="password"
@@ -100,7 +100,7 @@ export function ChangePasswordButton() {
                   required
                   minLength={6}
                   autoComplete="new-password"
-                  className="w-full rounded-lg border border-[var(--line)] bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+                  className="w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
                 />
 
                 {state.error && <p className="text-sm text-red-600">{state.error}</p>}

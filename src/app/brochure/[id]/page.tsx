@@ -7,6 +7,7 @@ import { buildWebsiteLinkHref } from "@/lib/websiteLink";
 import { studio } from "@/lib/studio";
 import { FloatingContact } from "@/components/FloatingContact";
 import { PdfIcon } from "@/components/PdfIcon";
+import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 
 // Always fresh — a brochure can be replaced or removed from the admin
 // panel at any time, and this page shouldn't serve a stale cached link.
@@ -100,9 +101,10 @@ export default async function BrochurePage({
               href={buildWebsiteLinkHref(studio.website, brochure.websiteLink)}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-sans-ui text-sm font-medium text-[var(--ink)]/70 underline-offset-2 hover:text-[var(--ink)] hover:underline"
+              className="font-sans-ui inline-flex items-center gap-1 text-sm font-medium text-[var(--ink)]/70 underline-offset-2 hover:text-[var(--ink)] hover:underline"
             >
-              See more on website ↗
+              See more on website
+              <ArrowOutwardIcon className="h-3.5 w-3.5" />
             </a>
           )}
         </div>

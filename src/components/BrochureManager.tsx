@@ -5,6 +5,7 @@ import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { WebsiteLinkOptions } from "@/lib/websiteLink";
 import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
+import { ArrowForwardIcon } from "@/components/ArrowIcons";
 
 function EmptyLibraryIcon({ className = "h-7 w-7" }: { className?: string }) {
   return (
@@ -37,11 +38,7 @@ export function BrochureManager({
 }) {
   const [brochures, setBrochures] = useState(initialBrochures);
   const [uploadOpen, setUploadOpen] = useState(false);
-  // Every brochure uploaded before this field existed defaults to
-  // "general" (see getBrochures), so that's the tab most likely to have
-  // content on first load right now — starting there avoids landing on
-  // an empty "Product" tab.
-  const [activeTab, setActiveTab] = useState<CatalogueType>("general");
+  const [activeTab, setActiveTab] = useState<CatalogueType>("product");
 
   // Every distinct tag already in use, for the tag-input's suggestions —
   // recomputed whenever the library changes.
@@ -76,10 +73,6 @@ export function BrochureManager({
     setBrochures((prev) => prev.map((b) => (b.id === id ? { ...b, tags } : b)));
   }
 
-  function handleTypeSaved(id: string, catalogueType: CatalogueType) {
-    setBrochures((prev) => prev.map((b) => (b.id === id ? { ...b, catalogueType } : b)));
-  }
-
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -88,7 +81,7 @@ export function BrochureManager({
             Where every catalogue lives.
           </h1>
           <p className="font-sans-ui max-w-md text-[var(--ink)]/70">
-            Upload once — the link never changes, ready whenever a client asks.
+            Upload once, the link never changes, ready whenever a client asks.
           </p>
         </div>
         <button
@@ -127,9 +120,10 @@ export function BrochureManager({
           </p>
           <button
             onClick={() => setUploadOpen(true)}
-            className="font-sans-ui text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
+            className="font-sans-ui inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
           >
-            Upload {brochures.length === 0 ? "your first brochure" : "a brochure"} →
+            Upload {brochures.length === 0 ? "your first brochure" : "a brochure"}
+            <ArrowForwardIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       ) : (
@@ -141,7 +135,6 @@ export function BrochureManager({
               allTags={allTags}
               onDeleted={handleDeleted}
               onTagsSaved={handleTagsSaved}
-              onTypeSaved={handleTypeSaved}
             />
           ))}
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2;
@@ -208,9 +209,10 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium underline underline-offset-2 hover:text-[var(--ink)]"
+              className="inline-flex items-center gap-1 font-medium underline underline-offset-2 hover:text-[var(--ink)]"
             >
-              Open PDF in a new tab ↗
+              Open PDF in a new tab
+              <ArrowOutwardIcon className="h-3 w-3" />
             </a>
           </div>
         )}

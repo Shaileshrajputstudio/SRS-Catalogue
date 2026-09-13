@@ -40,17 +40,23 @@ export default async function AdminPage() {
 
         <BrochureManager initialBrochures={brochures} websiteLinkOptions={websiteLinkOptions} />
 
-        <p className="font-sans-ui mt-16 border-t border-[var(--line)] pt-6 text-center text-xs text-[var(--ink)]/40">
-          © {new Date().getFullYear()} {studio.name} ·{" "}
-          <a
-            href={studio.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--ink)]/70"
-          >
-            {studio.website.replace(/^https?:\/\//, "")}
-          </a>
-        </p>
+        <div className="font-sans-ui mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-6 text-xs text-[var(--ink)]/40">
+          <p className="flex items-center gap-2.5">
+            <span>
+              © {new Date().getFullYear()} {studio.name}
+            </span>
+            <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+            <a
+              href={studio.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[var(--ink)]/70"
+            >
+              Visit Website
+            </a>
+          </p>
+          <p>Made by Hueness</p>
+        </div>
       </div>
     </>
   );

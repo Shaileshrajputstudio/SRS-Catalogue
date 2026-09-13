@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WhatsAppIcon, EmailIcon } from "@/components/ConnectIcons";
-import { deleteBrochure } from "@/app/actions/brochures";
-import { buildBrochurePathname, type Brochure } from "@/lib/brochures";
+import type { Brochure } from "@/lib/brochures";
 import { PdfPreview } from "@/components/PdfPreview";
+import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 
 function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -50,42 +50,22 @@ function LinkIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function TrashIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-.8 12.1a2 2 0 0 1-2 1.9H8.8a2 2 0 0 1-2-1.9L6 7h12Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 // The admin panel's share popup for one brochure — left pane previews the
-// actual PDF, right pane has the link, editable message, Send via
-// WhatsApp / Email, and Remove (its own confirm popup, not an inline
-// box). Tags and the website link live in the card's own "⋮" menu now,
-// not here — this stays focused on the one job of sharing. Opens from
-// clicking a card in BrochureManager.
+// actual PDF, right pane has the link, editable message, and Send via
+// WhatsApp / Email. Tags, website link, and delete all live in the
+// card's own "⋮" menu, not here — this stays focused on the one job of
+// sharing. Opens from clicking a card in BrochureManager.
 export function ShareModal({
   brochure,
   onClose,
-  onDeleted,
 }: {
   brochure: Brochure;
   onClose: () => void;
-  onDeleted: () => void;
 }) {
   const [message, setMessage] = useState("");
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
-  const [confirmingRemove, setConfirmingRemove] = useState(false);
-  const [isDeleting, startTransition] = useTransition();
   const urlInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -95,23 +75,15 @@ export function ShareModal({
       `Hi, sharing the ${brochure.title} catalogue from Shailesh Rajput Studio.\n\nTake a look whenever suits you — happy to talk through any piece that catches your eye.`,
     );
     setCopied(false);
-    setConfirmingRemove(false);
   }, [brochure]);
 
-  // Close on Escape — but not while the destructive confirm popup is
-  // showing, so it backs out of that first.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key !== "Escape") return;
-      if (confirmingRemove) {
-        setConfirmingRemove(false);
-        return;
-      }
-      onClose();
+      if (e.key === "Escape") onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, confirmingRemove]);
+  }, [onClose]);
 
   async function copyUrl() {
     setCopyFailed(false);
@@ -158,17 +130,10 @@ export function ShareModal({
     );
   }
 
-  function confirmRemove() {
-    startTransition(async () => {
-      await deleteBrochure(buildBrochurePathname(brochure.id, brochure.title), brochure.id);
-      onDeleted();
-    });
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8"
-      onClick={confirmingRemove ? undefined : onClose}
+      onClick={onClose}
     >
       <div
         className="flex h-[75vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-[var(--paper)] shadow-2xl sm:flex-row"
@@ -201,9 +166,10 @@ export function ShareModal({
             href={brochure.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-sans-ui mb-5 text-xs font-medium text-[var(--ink)]/60 underline-offset-2 hover:text-[var(--ink)] hover:underline sm:hidden"
+            className="font-sans-ui mb-5 inline-flex items-center gap-1 text-xs font-medium text-[var(--ink)]/60 underline-offset-2 hover:text-[var(--ink)] hover:underline sm:hidden"
           >
-            Open PDF in a new tab ↗
+            Open PDF in a new tab
+            <ArrowOutwardIcon className="h-3 w-3" />
           </a>
 
           <label className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
@@ -215,14 +181,14 @@ export function ShareModal({
               readOnly
               value={url}
               onFocus={(e) => e.target.select()}
-              className="font-sans-ui w-0 flex-1 truncate rounded-lg border border-[var(--line)] bg-white px-3 py-2.5 text-xs text-[var(--ink)]/70 outline-none"
+              className="font-sans-ui w-0 flex-1 truncate rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-3 py-2.5 text-xs text-[var(--ink)]/70 outline-none"
             />
             <button
               onClick={copyUrl}
               className={`font-sans-ui flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-medium transition ${
                 copied
                   ? "border-[var(--ink)] bg-[var(--ink)] text-white"
-                  : "border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--ink)]"
+                  : "border-[var(--line)] bg-[var(--paper-2)] text-[var(--ink)] hover:border-[var(--ink)]"
               }`}
             >
               {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
@@ -246,7 +212,7 @@ export function ShareModal({
             id="share-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="font-sans-ui min-h-[140px] w-full flex-1 resize-none rounded-t-lg border border-b-0 border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+            className="font-sans-ui min-h-[140px] w-full flex-1 resize-none rounded-t-lg border border-b-0 border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
           />
           {/* The link itself, shown locked onto the bottom of the message box
               rather than left editable inside it — so it's obviously part of
@@ -268,57 +234,14 @@ export function ShareModal({
             </button>
             <button
               onClick={sendEmail}
-              className="flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
+              className="flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-5 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
             >
               <EmailIcon className="h-5 w-5 shrink-0" />
               Email
             </button>
           </div>
-
-          <div className="mt-auto border-t border-[var(--line)] pt-5">
-            <button
-              onClick={() => setConfirmingRemove(true)}
-              className="font-sans-ui flex items-center gap-2 rounded-full border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
-            >
-              <TrashIcon className="h-4 w-4" />
-              Remove this brochure
-            </button>
-          </div>
         </div>
       </div>
-
-      {confirmingRemove && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
-          onClick={() => setConfirmingRemove(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="font-sans-ui w-full max-w-sm rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
-          >
-            <h3 className="mb-2 text-lg text-[var(--ink)]">Remove brochure?</h3>
-            <p className="mb-5 text-sm text-[var(--ink)]/70">
-              Remove &ldquo;{brochure.title}&rdquo;? This can&apos;t be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmingRemove(false)}
-                disabled={isDeleting}
-                className="flex-1 rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmRemove}
-                disabled={isDeleting}
-                className="flex-1 rounded-full bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
-              >
-                {isDeleting ? "Removing…" : "Remove"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

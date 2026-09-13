@@ -1,32 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { logout } from "@/app/actions";
 
-// "Log out" in the top bar — a click no longer logs out immediately;
-// it opens a small reconfirm popover first, so it can't happen by
-// accident from a stray click.
+// "Log out" in the top bar — a click opens the same centered confirm
+// popup pattern used for removing a brochure, rather than a corner
+// popover, so both destructive/exiting confirmations look consistent.
 export function LogoutButton() {
   const [confirming, setConfirming] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!confirming) return;
-    function onPointerDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setConfirming(false);
-      }
-    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setConfirming(false);
     }
-    document.addEventListener("mousedown", onPointerDown);
     window.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      window.removeEventListener("keydown", onKey);
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [confirming]);
 
   function confirmLogout() {
@@ -36,38 +26,47 @@ export function LogoutButton() {
   }
 
   return (
-    <div ref={wrapRef} className="relative">
+    <>
       <button
         type="button"
-        onClick={() => setConfirming((v) => !v)}
+        onClick={() => setConfirming(true)}
         className="font-medium text-white/70 transition hover:text-white"
       >
         Log out
       </button>
 
       {confirming && (
-        <div className="font-sans-ui absolute top-full right-0 z-50 mt-3 w-60 rounded-xl border border-white/10 bg-[#141414] p-4 text-left shadow-2xl">
-          <p className="mb-3 text-xs leading-relaxed text-white/70">Log out of the studio?</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirming(false)}
-              disabled={isPending}
-              className="flex-1 rounded-full border border-white/15 px-3 py-2 text-xs font-medium text-white/80 transition hover:border-white/30 hover:text-white disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={confirmLogout}
-              disabled={isPending}
-              className="flex-1 rounded-full bg-white px-3 py-2 text-xs font-medium text-[var(--ink)] transition hover:bg-[var(--accent)] disabled:opacity-50"
-            >
-              {isPending ? "Logging out…" : "Log out"}
-            </button>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={() => setConfirming(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="font-sans-ui w-full max-w-sm rounded-2xl bg-[var(--paper)] p-6 shadow-2xl"
+          >
+            <h3 className="mb-2 text-lg text-[var(--ink)]">Log out?</h3>
+            <p className="mb-5 text-sm text-[var(--ink)]/70">You&apos;ll need your password to sign back in.</p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={isPending}
+                className="flex-1 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmLogout}
+                disabled={isPending}
+                className="flex-1 rounded-full bg-[var(--ink)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)] disabled:opacity-50"
+              >
+                {isPending ? "Logging out…" : "Log out"}
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
