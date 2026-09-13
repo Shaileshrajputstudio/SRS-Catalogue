@@ -90,14 +90,19 @@ export default async function BrochurePage({
         </p>
 
         {brochure.thumbnailUrl && (
-          <div className="-mx-6 mb-8 overflow-hidden border-y border-[var(--line)] bg-white sm:mx-0 sm:rounded-2xl sm:border">
+          // Mobile crops the cover to a portrait 2:3 card (object-cover
+          // centers the crop) — the source thumbnail is a landscape PDF
+          // cover, so at full device width its native ratio read as an
+          // oddly short strip. sm: and up drops the forced ratio and goes
+          // back to the thumbnail's own aspect ratio, unchanged.
+          <div className="-mx-6 mb-8 aspect-[2/3] overflow-hidden border-y border-[var(--line)] bg-white sm:mx-0 sm:aspect-auto sm:rounded-2xl sm:border">
             <Image
               src={brochure.thumbnailUrl}
               alt={brochure.title}
               width={1200}
               height={849}
               unoptimized
-              className="h-auto w-full object-cover"
+              className="h-full w-full object-cover sm:h-auto"
               priority
             />
           </div>
