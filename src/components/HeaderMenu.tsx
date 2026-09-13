@@ -4,11 +4,33 @@ import { useEffect, useRef, useState } from "react";
 import { ChangePasswordButton } from "@/components/ChangePasswordButton";
 import { LogoutButton } from "@/components/LogoutButton";
 
-function MenuIcon({ className = "h-5 w-5" }: { className?: string }) {
+// Crossfades hamburger <-> X rather than swapping instantly — two
+// stacked icons with opposite opacity/scale, so the button always shows
+// what tapping it will do next (open the menu, or close it).
+function MenuToggleIcon({ open, className = "h-5 w-5" }: { open: boolean; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
+    <span className={`relative inline-flex shrink-0 ${className}`}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className={`absolute inset-0 h-full w-full transition-all duration-200 ${
+          open ? "scale-75 opacity-0" : "scale-100 opacity-100"
+        }`}
+      >
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      </svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className={`absolute inset-0 h-full w-full transition-all duration-200 ${
+          open ? "scale-100 opacity-100" : "scale-75 opacity-0"
+        }`}
+      >
+        <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      </svg>
+    </span>
   );
 }
 
@@ -50,10 +72,11 @@ export function HeaderMenu() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
+          aria-label={open ? "Close menu" : "Menu"}
+          aria-expanded={open}
           className="flex h-8 w-8 items-center justify-center text-white/70 transition hover:text-white"
         >
-          <MenuIcon />
+          <MenuToggleIcon open={open} />
         </button>
 
         {/* No close-on-click here: both buttons below open their own

@@ -173,21 +173,26 @@ export function BrochureCard({
             <label className="mt-4 mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Website Link
             </label>
-            <p className="mb-4 text-sm text-[var(--ink)]">
+            <p className="text-sm text-[var(--ink)]">
               {brochure.websiteLink ? brochure.websiteLink.label : "No Website Link"}
             </p>
 
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                setConfirmingRemove(true);
-              }}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
-            >
-              <TrashIcon className="h-3.5 w-3.5" />
-              Remove this catalogue
-            </button>
+            {/* A clear divider (not just a margin bump) so this destructive
+                action reads as its own separated zone, not a continuation
+                of the tags/website-link editing above it. */}
+            <div className="mt-6 border-t border-[var(--line)] pt-5">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setConfirmingRemove(true);
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 px-4 py-3 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50"
+              >
+                <TrashIcon className="h-3.5 w-3.5" />
+                Remove this catalogue
+              </button>
+            </div>
           </div>
         </div>
       )}
