@@ -229,7 +229,7 @@ export function UploadBrochureModal({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Table Lights Collection"
           disabled={isBusy}
-          className="font-sans-ui mb-5 w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)] disabled:opacity-60"
+          className="font-sans-ui mb-5 w-full rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)] disabled:opacity-60"
         />
 
         <label className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
@@ -248,7 +248,7 @@ export function UploadBrochureModal({
               className={`font-sans-ui rounded-lg border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60 ${
                 catalogueType === t
                   ? "border-[var(--ink)] bg-[var(--ink)] text-white"
-                  : "border-[var(--line)] bg-[var(--paper-2)] text-[var(--ink)] hover:border-[var(--ink)]"
+                  : "border-[var(--line)] bg-[#F6F3E8] text-[var(--ink)] hover:border-[var(--ink)]"
               }`}
             >
               {CATALOGUE_TYPE_LABELS[t]}
@@ -260,7 +260,7 @@ export function UploadBrochureModal({
           Tags <span className="normal-case tracking-normal text-[var(--ink)]/40">(optional — e.g. region or pricing)</span>
         </label>
         <div className="mb-5">
-          <TagInput tags={tags} onChange={setTags} suggestions={allTags} />
+          <TagInput tags={tags} onChange={setTags} suggestions={allTags} maxTags={1} />
         </div>
 
         {catalogueType !== "general" && (
@@ -278,7 +278,7 @@ export function UploadBrochureModal({
                 onChange={(e) => setLinkSelection(e.target.value)}
                 disabled={isBusy}
                 required
-                className="font-sans-ui w-full appearance-none rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 pr-10 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)] disabled:opacity-60"
+                className="font-sans-ui w-full appearance-none rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-4 py-3 pr-10 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)] disabled:opacity-60"
               >
                 <option value="" disabled>
                   Choose a website link…

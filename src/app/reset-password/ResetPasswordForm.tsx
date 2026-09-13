@@ -26,7 +26,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         minLength={6}
         autoFocus
         autoComplete="new-password"
-        className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+        className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
       />
 
       <label
@@ -42,7 +42,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         required
         minLength={6}
         autoComplete="new-password"
-        className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+        className="font-sans-ui mb-4 w-full rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
       />
 
       {state.error && (

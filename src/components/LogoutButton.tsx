@@ -51,7 +51,7 @@ export function LogoutButton() {
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={isPending}
-                className="flex-1 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
+                className="flex-1 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
               >
                 Cancel
               </button>

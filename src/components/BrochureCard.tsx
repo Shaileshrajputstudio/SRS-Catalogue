@@ -117,7 +117,7 @@ export function BrochureCard({
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--ink)] shadow-sm"
+                  className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[11px] tracking-wide text-[var(--ink)] shadow-sm"
                 >
                   {tag}
                 </span>
@@ -163,6 +163,7 @@ export function BrochureCard({
                 setTagsDirty(true);
               }}
               suggestions={allTags}
+              maxTags={1}
             />
             {tagsDirty && (
               <button
@@ -177,10 +178,9 @@ export function BrochureCard({
             <label className="mt-4 mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
               Website Link
             </label>
-            <p className="text-sm text-[var(--ink)]">
+            <p className="mb-4 text-sm text-[var(--ink)]">
               {brochure.websiteLink ? brochure.websiteLink.label : "No Website Link"}
             </p>
-            <p className="mt-1 text-xs text-[var(--ink)]/50">Set at upload — not editable here.</p>
 
             <button
               type="button"
@@ -220,7 +220,7 @@ export function BrochureCard({
               <button
                 onClick={() => setConfirmingRemove(false)}
                 disabled={isDeleting}
-                className="flex-1 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
+                className="flex-1 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)] disabled:opacity-50"
               >
                 Cancel
               </button>

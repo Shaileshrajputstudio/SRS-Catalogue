@@ -38,9 +38,17 @@ function bucket(): string {
 // The bucket's public R2.dev (or later, custom-domain) base URL — same
 // role as the permanent URLs Vercel Blob used to hand back, so nothing
 // downstream needs to change how it stores or renders a brochure's url.
+//
+// Keys here often already contain percent-encoded characters (titles are
+// run through encodeURIComponent before becoming part of the key, e.g.
+// "Accent%20Furniture" as literal characters) — encoding each path
+// segment again turns that literal "%" into "%25" so the browser's own
+// URL-decoding lands back on the real key instead of silently 404ing on
+// a decoded-once mismatch.
 export function publicUrlFor(key: string): string {
   const base = env("R2_PUBLIC_BASE_URL").replace(/\/$/, "");
-  return `${base}/${key}`;
+  const encodedKey = key.split("/").map(encodeURIComponent).join("/");
+  return `${base}/${encodedKey}`;
 }
 
 export type R2Object = {

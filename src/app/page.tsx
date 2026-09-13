@@ -27,7 +27,7 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1320px] px-6 py-8 sm:px-14 sm:py-10">
+      <div className="mx-auto max-w-[1320px] px-6 pt-5 pb-8 sm:px-14 sm:pt-6 sm:pb-10">
         <Image
           src="/brand/srs-logo.png"
           alt={studio.name}
@@ -35,7 +35,7 @@ export default async function AdminPage() {
           height={366}
           priority
           unoptimized
-          className="mb-4 h-7 w-auto sm:h-8"
+          className="mb-4 h-[32px] w-auto sm:h-[37px]"
         />
 
         <BrochureManager initialBrochures={brochures} websiteLinkOptions={websiteLinkOptions} />
@@ -55,7 +55,9 @@ export default async function AdminPage() {
               Visit Website
             </a>
           </p>
-          <p>Made by Hueness</p>
+          <a href="https://hueness.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--ink)]/70">
+            Made by Hueness
+          </a>
         </div>
       </div>
     </>

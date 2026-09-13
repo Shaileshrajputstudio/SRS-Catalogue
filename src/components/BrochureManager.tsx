@@ -80,7 +80,7 @@ export function BrochureManager({
           <h1 className="mb-2 max-w-xl text-2xl leading-tight text-[var(--ink)] sm:text-3xl">
             Where every catalogue lives.
           </h1>
-          <p className="font-sans-ui max-w-md text-[var(--ink)]/70">
+          <p className="font-sans-ui text-[var(--ink)]/70">
             Upload once, the link never changes, ready whenever a client asks.
           </p>
         </div>

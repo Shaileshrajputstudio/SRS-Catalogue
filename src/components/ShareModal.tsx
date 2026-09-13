@@ -72,7 +72,7 @@ export function ShareModal({
     const fullUrl = `${window.location.origin}/brochure/${brochure.id}`;
     setUrl(fullUrl);
     setMessage(
-      `Hi, sharing the ${brochure.title} catalogue from Shailesh Rajput Studio.\n\nTake a look whenever suits you — happy to talk through any piece that catches your eye.`,
+      `Hi, sharing the ${brochure.title} catalogue from Shailesh Rajput Studio.\n\nTake a look whenever suits you — happy to talk through any piece that catches your eye.\n\nRegards,\nTeam SRS`,
     );
     setCopied(false);
   }, [brochure]);
@@ -181,14 +181,14 @@ export function ShareModal({
               readOnly
               value={url}
               onFocus={(e) => e.target.select()}
-              className="font-sans-ui w-0 flex-1 truncate rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-3 py-2.5 text-xs text-[var(--ink)]/70 outline-none"
+              className="font-sans-ui w-0 flex-1 truncate rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-3 py-2.5 text-xs text-[var(--ink)]/70 outline-none"
             />
             <button
               onClick={copyUrl}
               className={`font-sans-ui flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2.5 text-xs font-medium transition ${
                 copied
                   ? "border-[var(--ink)] bg-[var(--ink)] text-white"
-                  : "border-[var(--line)] bg-[var(--paper-2)] text-[var(--ink)] hover:border-[var(--ink)]"
+                  : "border-[var(--line)] bg-[#F6F3E8] text-[var(--ink)] hover:border-[var(--ink)]"
               }`}
             >
               {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
@@ -212,7 +212,7 @@ export function ShareModal({
             id="share-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="font-sans-ui min-h-[140px] w-full flex-1 resize-none rounded-t-lg border border-b-0 border-[var(--line)] bg-[var(--paper-2)] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+            className="font-sans-ui min-h-[140px] w-full flex-1 resize-none rounded-t-lg border border-b-0 border-[var(--line)] bg-[#F6F3E8] px-4 py-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
           />
           {/* The link itself, shown locked onto the bottom of the message box
               rather than left editable inside it — so it's obviously part of
@@ -234,7 +234,7 @@ export function ShareModal({
             </button>
             <button
               onClick={sendEmail}
-              className="flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[var(--paper-2)] px-5 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
+              className="flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-5 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
             >
               <EmailIcon className="h-5 w-5 shrink-0" />
               Email

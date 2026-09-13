@@ -10,18 +10,21 @@ export function TagInput({
   tags,
   onChange,
   suggestions,
+  maxTags,
 }: {
   tags: string[];
   onChange: (tags: string[]) => void;
   suggestions: string[];
+  maxTags?: number;
 }) {
   const [draft, setDraft] = useState("");
   const listId = useId();
+  const atLimit = maxTags !== undefined && tags.length >= maxTags;
 
   function commit() {
     const clean = draft.trim();
     setDraft("");
-    if (!clean) return;
+    if (!clean || atLimit) return;
     if (tags.some((t) => t.toLowerCase() === clean.toLowerCase())) return;
     onChange([...tags, clean]);
   }
@@ -37,7 +40,7 @@ export function TagInput({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="font-sans-ui inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--paper-2)]/70 px-3 py-1 text-xs text-[var(--ink)]"
+              className="font-sans-ui inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[#F6F3E8]/70 px-3 py-1 text-xs text-[var(--ink)]"
             >
               {tag}
               <button
@@ -52,20 +55,22 @@ export function TagInput({
           ))}
         </div>
       )}
-      <input
-        list={listId}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === ",") {
-            e.preventDefault();
-            commit();
-          }
-        }}
-        onBlur={commit}
-        placeholder="Add a tag and press Enter"
-        className="font-sans-ui w-full rounded-lg border border-[var(--line)] bg-[var(--paper-2)] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
-      />
+      {!atLimit && (
+        <input
+          list={listId}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              commit();
+            }
+          }}
+          onBlur={commit}
+          placeholder="Add a tag and press Enter"
+          className="font-sans-ui w-full rounded-lg border border-[var(--line)] bg-[#F6F3E8] px-4 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-[var(--ink)]"
+        />
+      )}
       <datalist id={listId}>
         {suggestions
           .filter((s) => !tags.some((t) => t.toLowerCase() === s.toLowerCase()))
