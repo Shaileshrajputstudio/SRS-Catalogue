@@ -14,6 +14,7 @@ const CATALOGUE_TYPE_LABELS: Record<CatalogueType, string> = {
   product: "Series",
   story: "Story",
   general: "General",
+  item: "Product",
 };
 
 function UploadCloudIcon({ className = "h-6 w-6" }: { className?: string }) {
@@ -115,7 +116,7 @@ export function UploadBrochureModal({
       return;
     }
     if (!catalogueType) {
-      setError("Choose a catalogue type — Series, Story, or General.");
+      setError("Choose a catalogue type — Series, Story, General, or Product.");
       return;
     }
     if (catalogueType !== "general" && !linkSelection) {
@@ -240,7 +241,7 @@ export function UploadBrochureModal({
         <label className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
           Catalogue Type
         </label>
-        <div className="mb-5 grid grid-cols-3 gap-2">
+        <div className="mb-5 grid grid-cols-4 gap-2">
           {(Object.keys(CATALOGUE_TYPE_LABELS) as CatalogueType[]).map((t) => (
             <button
               key={t}
@@ -268,7 +269,7 @@ export function UploadBrochureModal({
           <TagInput tags={tags} onChange={setTags} suggestions={allTags} maxTags={1} />
         </div>
 
-        {(catalogueType === "product" || catalogueType === "story") && (
+        {(catalogueType === "product" || catalogueType === "story" || catalogueType === "item") && (
           <>
             <label
               htmlFor="brochure-category"
@@ -289,7 +290,7 @@ export function UploadBrochureModal({
                   Choose a website link…
                 </option>
                 <option value="_none_">No Website Link</option>
-                {catalogueType === "product" && (
+                {(catalogueType === "product" || catalogueType === "item") && (
                   <optgroup label="Product Category">
                     {websiteLinkOptions.categories.map((c) => (
                       <option key={c} value={`category|${c}`}>

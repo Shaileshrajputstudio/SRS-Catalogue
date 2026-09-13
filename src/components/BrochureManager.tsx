@@ -33,11 +33,12 @@ function EmptyLibraryIcon({ className = "h-7 w-7" }: { className?: string }) {
 }
 
 // "All" isn't a real tab — every brochure has exactly one type, so these
-// three always partition the library completely.
+// four always partition the library completely.
 const TABS: { type: CatalogueType; label: string }[] = [
   { type: "product", label: "Series" },
   { type: "story", label: "Story" },
   { type: "general", label: "General" },
+  { type: "item", label: "Product" },
 ];
 
 // The whole admin homepage: the heading, the "+ Upload Brochure" CTA, and
@@ -72,7 +73,7 @@ export function BrochureManager({
   }, [brochures]);
 
   const countByType = useMemo(() => {
-    const counts: Record<CatalogueType, number> = { product: 0, story: 0, general: 0 };
+    const counts: Record<CatalogueType, number> = { product: 0, story: 0, general: 0, item: 0 };
     for (const b of brochures) counts[b.catalogueType]++;
     return counts;
   }, [brochures]);

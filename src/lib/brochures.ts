@@ -25,8 +25,14 @@ import { encodeWebsiteLink, decodeWebsiteLink, type WebsiteLink } from "./websit
 // page), so this can never be derived from that field; it has to be its
 // own choice. "general" is the deliberate catch-all for anything that
 // isn't cleanly one or the other.
-export type CatalogueType = "product" | "story" | "general";
-const CATALOGUE_TYPES: CatalogueType[] = ["product", "story", "general"];
+//
+// The internal key and its display label have drifted apart for two of
+// these: "product" now displays as "Series" (renamed after "item" was
+// added below it, to leave room for a distinct "Product" tab), and
+// "item" is the newer type that actually displays as "Product" — see
+// CATALOGUE_TYPE_LABELS in UploadBrochureModal.tsx for the map.
+export type CatalogueType = "product" | "story" | "general" | "item";
+const CATALOGUE_TYPES: CatalogueType[] = ["product", "story", "general", "item"];
 
 export type Brochure = {
   id: string;
@@ -43,7 +49,7 @@ const PDF_RE = /^brochures\/([a-zA-Z0-9_-]+)--(.+)\.pdf$/;
 const THUMB_RE = /^brochure-thumbs\/([a-zA-Z0-9_-]+)\.png$/;
 const TAGS_RE = /^brochure-tags\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
 const CATEGORY_RE = /^brochure-category\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
-const TYPE_RE = /^brochure-type\/([a-zA-Z0-9_-]+)--(product|story|general)\.json$/;
+const TYPE_RE = /^brochure-type\/([a-zA-Z0-9_-]+)--(product|story|general|item)\.json$/;
 
 export const TAGS_PREFIX = "brochure-tags/";
 export const CATEGORY_PREFIX = "brochure-category/";
