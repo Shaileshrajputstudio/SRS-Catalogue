@@ -5,7 +5,7 @@ import { WhatsAppIcon, EmailIcon } from "@/components/ConnectIcons";
 import type { Brochure } from "@/lib/brochures";
 import { PdfPreview } from "@/components/PdfPreview";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
-import { ShareQrCode } from "@/components/ShareQrCode";
+import { QrCodeOverlay } from "@/components/QrCodeOverlay";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -52,6 +52,23 @@ function LinkIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function QrIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <rect x="3.5" y="3.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="14.5" y="3.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="3.5" y="14.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M14.5 15h3v3h-3zM20.5 15v6M14.5 20.5h6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // The admin panel's share popup for one brochure — left pane previews the
 // actual PDF, right pane has the link, editable message, and Send via
 // WhatsApp / Email. Tags, website link, and delete all live in the
@@ -68,6 +85,7 @@ export function ShareModal({
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
   useBodyScrollLock(true);
 
@@ -139,9 +157,10 @@ export function ShareModal({
       onClick={onClose}
     >
       <div
-        className="animate-sheet-up flex h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl bg-[var(--paper)] shadow-2xl sm:h-[75vh] sm:flex-row sm:rounded-2xl"
+        className="animate-sheet-up relative flex h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl bg-[var(--paper)] shadow-2xl sm:h-[75vh] sm:flex-row sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {qrOpen && <QrCodeOverlay url={url} title={brochure.title} onClose={() => setQrOpen(false)} />}
         {/* Left — a brand-styled preview (own page controls, no native PDF chrome). */}
         <div className="hidden h-full min-w-0 flex-1 border-r border-[var(--line)] bg-[var(--paper-2)] sm:block">
           <PdfPreview url={brochure.url} title={brochure.title} />
@@ -209,12 +228,6 @@ export function ShareModal({
             </p>
           )}
 
-          {url && (
-            <div className="mb-5">
-              <ShareQrCode url={url} title={brochure.title} />
-            </div>
-          )}
-
           <label
             htmlFor="share-message"
             className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase"
@@ -237,7 +250,7 @@ export function ShareModal({
             <span className="ml-auto shrink-0 text-[var(--ink)]/40">Always included</span>
           </div>
 
-          <div className="font-sans-ui mb-6 grid grid-cols-2 gap-3">
+          <div className="font-sans-ui mb-3 grid grid-cols-2 gap-3">
             <button
               onClick={sendWhatsApp}
               className="flex items-center justify-center gap-2 rounded-full bg-[var(--ink)] px-5 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
@@ -253,6 +266,14 @@ export function ShareModal({
               Email
             </button>
           </div>
+
+          <button
+            onClick={() => setQrOpen(true)}
+            className="font-sans-ui mb-6 flex items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-5 py-3 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
+          >
+            <QrIcon className="h-5 w-5 shrink-0" />
+            Show QR Code
+          </button>
         </div>
       </div>
     </div>
