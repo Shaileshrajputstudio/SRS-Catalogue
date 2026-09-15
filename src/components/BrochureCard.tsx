@@ -10,8 +10,17 @@ import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
+// Hand-rolled instead of toLocaleDateString: Node's ICU and Safari's ICU
+// abbreviate "September" differently ("Sep" vs "Sept"), so this text came
+// out different between the server-rendered HTML and the client's
+// hydration pass — a real hydration-mismatch error, not a cosmetic one.
+// UTC getters too, so server (UTC) and a non-UTC client can't disagree on
+// the date itself either.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const d = new Date(iso);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 function DotsIcon({ className = "h-4 w-4" }: { className?: string }) {
