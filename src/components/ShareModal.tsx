@@ -5,6 +5,7 @@ import { WhatsAppIcon, EmailIcon } from "@/components/ConnectIcons";
 import type { Brochure } from "@/lib/brochures";
 import { PdfPreview } from "@/components/PdfPreview";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
+import { ShareQrCode } from "@/components/ShareQrCode";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -206,6 +207,12 @@ export function ShareModal({
               Couldn&apos;t copy automatically — the link is selected above, press ⌘C / Ctrl+C to
               copy it.
             </p>
+          )}
+
+          {url && (
+            <div className="mb-5">
+              <ShareQrCode url={url} title={brochure.title} />
+            </div>
           )}
 
           <label
