@@ -20,7 +20,12 @@ export function useQrCodeSvg(url: string, width = 200): string | null {
       type: "svg",
       margin: 1,
       width,
-      color: { dark: "#1e1e1e", light: "#00000000" },
+      // Opaque white, not transparent — a transparent background let
+      // whatever sits behind the overlay in the DOM stacking order (the
+      // Back button, the PDF preview's own controls) show through the
+      // gaps between modules on some browsers. Printing wants a solid
+      // background anyway.
+      color: { dark: "#1e1e1e", light: "#ffffff" },
     }).then((result) => {
       if (!cancelled) setSvg(result);
     });
