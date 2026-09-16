@@ -54,7 +54,7 @@ export function GalleryBrowser({
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3">
         {visible.map((brochure) => (
-          <Link key={brochure.id} href={`/brochure/${brochure.id}`} className="group block">
+          <Link key={brochure.id} href={`/brochure/${brochure.id}?from=gallery`} className="group block">
             <div className="mb-2 flex aspect-[297/210] items-center justify-center overflow-hidden rounded-xl border border-[var(--line)] bg-white">
               {brochure.thumbnailUrl ? (
                 <Image

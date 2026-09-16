@@ -62,12 +62,15 @@ export default async function BrochurePage({
   const brochure = all.find((b) => b.id === id);
   if (!brochure) notFound();
 
-  // The catalogue this share link originally pointed to — carried through
-  // "Explore More" clicks via ?from= so the logo always leads back to it,
-  // no matter how many other catalogues someone browses through from here.
-  // Falls back to this page's own id when there's no "from" (i.e. this
-  // *is* the originally-shared one).
-  const originId = from && all.some((b) => b.id === from) ? from : id;
+  // Where this share link originally pointed — carried through "Explore
+  // More" clicks via ?from= so the logo always leads back to it, no
+  // matter how many other catalogues someone browses through from here.
+  // "gallery" is a sentinel (not a real brochure id) for the case where
+  // someone arrived via the public gallery rather than one specific
+  // brochure link — falls back to this page's own id when there's no
+  // "from" at all (i.e. this *is* the originally-shared one).
+  const originId = from === "gallery" || (from && all.some((b) => b.id === from)) ? from : id;
+  const originHref = originId === "gallery" ? "/gallery" : `/brochure/${originId}`;
 
   // Same Catalogue Type only — a Product catalogue shouldn't cross-sell a
   // Story or General one just because both happen to be untagged.
@@ -77,7 +80,7 @@ export default async function BrochurePage({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-4xl flex-col px-6 py-6 sm:py-8">
-      <Link href={`/brochure/${originId}`} className="mb-6 inline-block w-fit">
+      <Link href={originHref} className="mb-6 inline-block w-fit">
         <Image
           src="/brand/srs-logo.png"
           alt={studio.name}
