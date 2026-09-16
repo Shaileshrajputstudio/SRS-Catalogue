@@ -17,10 +17,11 @@ const PUBLIC_PREFIXES = [
   "/pdf.worker.min.mjs",
 ];
 
-// Client-facing routes (a brochure link a client actually opens) are
-// intentionally open — no PIN. Only the admin dashboard (root "/") and
-// the brochure-upload API stay behind ADMIN_PASSWORD.
-const CLIENT_PREFIXES = ["/brochure/"];
+// Client-facing routes (a brochure link a client actually opens, or the
+// full gallery a platform-wide QR code lands on) are intentionally open
+// — no PIN. Only the admin dashboard (root "/") and the brochure-upload
+// API stay behind ADMIN_PASSWORD.
+const CLIENT_PREFIXES = ["/brochure/", "/gallery"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

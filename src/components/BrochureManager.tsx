@@ -8,6 +8,7 @@ import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
 import { ManageTabsModal } from "@/components/ManageTabsModal";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
+import { QrCodeOverlay } from "@/components/QrCodeOverlay";
 import { Toast } from "@/components/Toast";
 
 // A toast is visible for 2.6s (matches the CSS animation in
@@ -20,6 +21,23 @@ function PlusIcon({ className = "h-6 w-6" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function QrIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <rect x="3.5" y="3.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="14.5" y="3.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="3.5" y="14.5" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M14.5 15h3v3h-3zM20.5 15v6M14.5 20.5h6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -79,6 +97,7 @@ export function BrochureManager({
   const [catalogueTypes, setCatalogueTypes] = useState(initialCatalogueTypes);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [manageTabsOpen, setManageTabsOpen] = useState(false);
+  const [galleryQrOpen, setGalleryQrOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CatalogueType>(
     initialCatalogueTypes[0]?.key ?? "general",
   );
@@ -154,12 +173,21 @@ export function BrochureManager({
             Upload once, the link never changes, ready whenever a client asks.
           </p>
         </div>
-        <button
-          onClick={() => setUploadOpen(true)}
-          className="font-sans-ui hidden shrink-0 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)] sm:inline-flex"
-        >
-          + Upload Catalogue
-        </button>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            onClick={() => setGalleryQrOpen(true)}
+            className="font-sans-ui inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-5 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
+          >
+            <QrIcon className="h-4.5 w-4.5" />
+            Share Platform
+          </button>
+          <button
+            onClick={() => setUploadOpen(true)}
+            className="font-sans-ui hidden rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)] sm:inline-flex"
+          >
+            + Upload Catalogue
+          </button>
+        </div>
       </div>
 
       <div className="font-sans-ui mb-8 flex items-center gap-1 border-y border-[var(--line)] py-1">
@@ -251,6 +279,15 @@ export function BrochureManager({
           onClose={() => setManageTabsOpen(false)}
           onTypesChange={handleTypesChanged}
           onBrochuresRetyped={handleBrochuresRetyped}
+        />
+      )}
+
+      {galleryQrOpen && (
+        <QrCodeOverlay
+          url={typeof window !== "undefined" ? `${window.location.origin}/gallery` : ""}
+          title="SRS Catalogue Hub"
+          onClose={() => setGalleryQrOpen(false)}
+          fixed
         />
       )}
 

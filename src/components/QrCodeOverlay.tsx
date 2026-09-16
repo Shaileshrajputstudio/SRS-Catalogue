@@ -10,15 +10,23 @@ export function QrCodeOverlay({
   url,
   title,
   onClose,
+  fixed = false,
 }: {
   url: string;
   title: string;
   onClose: () => void;
+  // ShareModal nests this inside its own already-positioned sheet
+  // (absolute, bounded to the modal's rounded corners); a page-level
+  // caller with no such wrapper needs it to cover the real viewport
+  // instead.
+  fixed?: boolean;
 }) {
   const svg = useQrCodeSvg(url, 480);
 
   return (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-10 overflow-y-auto bg-[var(--paper)] px-6 py-14 text-center">
+    <div
+      className={`${fixed ? "fixed" : "absolute"} inset-0 z-50 flex flex-col items-center justify-center gap-10 overflow-y-auto bg-[var(--paper)] px-6 py-14 text-center`}
+    >
       <button
         onClick={onClose}
         className="font-sans-ui absolute top-6 left-6 flex items-center gap-1.5 text-xs font-medium text-[var(--ink)]/60 transition hover:text-[var(--ink)]"
