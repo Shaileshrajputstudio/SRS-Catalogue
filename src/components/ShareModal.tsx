@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { WhatsAppIcon, EmailIcon } from "@/components/ConnectIcons";
-import type { Brochure } from "@/lib/brochures";
-import { PdfPreview } from "@/components/PdfPreview";
+import type { ReactNode } from "react";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 import { QrCodeOverlay } from "@/components/QrCodeOverlay";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
@@ -69,16 +68,24 @@ function QrIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-// The admin panel's share popup for one brochure — left pane previews the
-// actual PDF, right pane has the link, editable message, and Send via
+// The admin panel's share popup — used for one brochure and for the whole
+// gallery. Left pane shows whatever preview the caller passes, right pane has the link, editable message, and Send via
 // WhatsApp / Email. Tags, website link, and delete all live in the
 // card's own "⋮" menu, not here — this stays focused on the one job of
 // sharing. Opens from clicking a card in BrochureManager.
 export function ShareModal({
-  brochure,
+  title,
+  path,
+  defaultMessage,
+  preview,
+  mobileLink,
   onClose,
 }: {
-  brochure: Brochure;
+  title: string;
+  path: string;
+  defaultMessage: string;
+  preview: ReactNode;
+  mobileLink?: { href: string; label: string };
   onClose: () => void;
 }) {
   const [message, setMessage] = useState("");
@@ -90,13 +97,10 @@ export function ShareModal({
   useBodyScrollLock(true);
 
   useEffect(() => {
-    const fullUrl = `${window.location.origin}/brochure/${brochure.id}`;
-    setUrl(fullUrl);
-    setMessage(
-      `Hi\n\nSharing the ${brochure.title} catalogue from Shailesh Rajput Studio. Take a look whenever suits you. Happy to talk through any product that catches your eye.\n\nRegards,\nTeam SRS`,
-    );
+    setUrl(`${window.location.origin}${path}`);
+    setMessage(defaultMessage);
     setCopied(false);
-  }, [brochure]);
+  }, [path, defaultMessage]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -146,7 +150,7 @@ export function ShareModal({
 
   function sendEmail() {
     window.open(
-      `mailto:?subject=${encodeURIComponent(brochure.title)}&body=${encodeURIComponent(fullMessage())}`,
+      `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(fullMessage())}`,
       "_blank",
     );
   }
@@ -160,10 +164,10 @@ export function ShareModal({
         className="animate-sheet-up relative flex h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-2xl bg-[var(--paper)] shadow-2xl sm:h-[75vh] sm:flex-row sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {qrOpen && <QrCodeOverlay url={url} title={brochure.title} onClose={() => setQrOpen(false)} />}
+        {qrOpen && <QrCodeOverlay url={url} title={title} onClose={() => setQrOpen(false)} />}
         {/* Left — a brand-styled preview (own page controls, no native PDF chrome). */}
         <div className="hidden h-full min-w-0 flex-1 border-r border-[var(--line)] bg-[var(--paper-2)] sm:block">
-          <PdfPreview url={brochure.url} title={brochure.title} />
+          {preview}
         </div>
 
         {/* Right — link, message, send. */}
@@ -177,7 +181,7 @@ export function ShareModal({
               <p className="font-sans-ui mb-1 text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
                 Share
               </p>
-              <h2 className="truncate text-xl text-[var(--ink)]">{brochure.title}</h2>
+              <h2 className="truncate text-xl text-[var(--ink)]">{title}</h2>
             </div>
             <button
               onClick={onClose}
@@ -188,15 +192,17 @@ export function ShareModal({
             </button>
           </div>
 
-          <a
-            href={brochure.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-sans-ui mb-5 inline-flex items-center gap-1 text-xs font-medium text-[var(--ink)]/60 underline-offset-2 hover:text-[var(--ink)] hover:underline sm:hidden"
-          >
-            Open PDF in a new tab
-            <ArrowOutwardIcon className="h-3 w-3" />
-          </a>
+          {mobileLink && (
+            <a
+              href={mobileLink.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-sans-ui mb-5 inline-flex items-center gap-1 text-xs font-medium text-[var(--ink)]/60 underline-offset-2 hover:text-[var(--ink)] hover:underline sm:hidden"
+            >
+              {mobileLink.label}
+              <ArrowOutwardIcon className="h-3 w-3" />
+            </a>
+          )}
 
           <label className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
             Link

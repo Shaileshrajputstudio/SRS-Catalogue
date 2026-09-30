@@ -8,7 +8,7 @@ import { UploadBrochureModal } from "@/components/UploadBrochureModal";
 import { BrochureCard } from "@/components/BrochureCard";
 import { ManageTabsModal } from "@/components/ManageTabsModal";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
-import { QrCodeOverlay } from "@/components/QrCodeOverlay";
+import { ShareModal } from "@/components/ShareModal";
 import { Toast } from "@/components/Toast";
 
 // A toast is visible for 2.6s (matches the CSS animation in
@@ -283,11 +283,13 @@ export function BrochureManager({
       )}
 
       {galleryQrOpen && (
-        <QrCodeOverlay
-          url={typeof window !== "undefined" ? `${window.location.origin}/gallery` : ""}
+        <ShareModal
           title="SRS Catalogue Hub"
+          path="/gallery"
+          defaultMessage={"Hi\n\nHere's the full Shailesh Rajput Studio catalogue library, every collection in one place. Take a look whenever suits you.\n\nRegards,\nTeam SRS"}
+          preview={<iframe src="/gallery" title="Gallery preview" className="h-full w-full border-0" />}
+          mobileLink={{ href: "/gallery", label: "Open gallery in a new tab" }}
           onClose={() => setGalleryQrOpen(false)}
-          fixed
         />
       )}
 

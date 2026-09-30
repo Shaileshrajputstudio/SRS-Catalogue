@@ -8,6 +8,7 @@ import { deleteBrochure, updateBrochureTags } from "@/app/actions/brochures";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
+import { PdfPreview } from "@/components/PdfPreview";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 // Hand-rolled instead of toLocaleDateString: Node's ICU and Safari's ICU
@@ -129,7 +130,16 @@ export function BrochureCard({
         <p className="font-sans-ui text-xs font-medium text-[var(--ink)]/50">{formatDate(brochure.uploadedAt)}</p>
       </button>
 
-      {shareOpen && <ShareModal brochure={brochure} onClose={() => setShareOpen(false)} />}
+      {shareOpen && (
+        <ShareModal
+          title={brochure.title}
+          path={`/brochure/${brochure.id}`}
+          defaultMessage={`Hi\n\nSharing the ${brochure.title} catalogue from Shailesh Rajput Studio. Take a look whenever suits you. Happy to talk through any product that catches your eye.\n\nRegards,\nTeam SRS`}
+          preview={<PdfPreview url={brochure.url} title={brochure.title} />}
+          mobileLink={{ href: brochure.url, label: "Open PDF in a new tab" }}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
 
       <button
         type="button"
