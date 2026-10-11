@@ -15,6 +15,7 @@ const PUBLIC_PREFIXES = [
   "/apple-touch-icon.png",
   "/manifest.webmanifest",
   "/pdf.worker.min.mjs",
+  "/files/",
 ];
 
 // Client-facing routes (a brochure link a client actually opens, or the

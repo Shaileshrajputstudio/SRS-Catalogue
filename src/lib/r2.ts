@@ -46,7 +46,10 @@ function bucket(): string {
 // URL-decoding lands back on the real key instead of silently 404ing on
 // a decoded-once mismatch.
 export function publicUrlFor(key: string): string {
-  const base = env("R2_PUBLIC_BASE_URL").replace(/\/$/, "");
+  // FILES_BASE_URL (e.g. https://hub.shaileshrajputstudio.com/files) routes
+  // visitors through this app's own domain instead of r2.dev — see the
+  // rewrite in next.config.ts. Unset, it falls back to the raw bucket URL.
+  const base = (process.env.FILES_BASE_URL || env("R2_PUBLIC_BASE_URL")).replace(/\/$/, "");
   const encodedKey = key.split("/").map(encodeURIComponent).join("/");
   return `${base}/${encodedKey}`;
 }
