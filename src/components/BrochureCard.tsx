@@ -134,7 +134,6 @@ export function BrochureCard({
         <ShareModal
           title={brochure.title}
           path={`/brochure/${brochure.id}`}
-          defaultMessage={`Hi\n\nSharing the ${brochure.title} catalogue from Shailesh Rajput Studio. Take a look whenever suits you. Happy to talk through any product that catches your eye.\n\nRegards,\nTeam SRS`}
           preview={<PdfPreview url={brochure.url} title={brochure.title} />}
           mobileLink={{ href: brochure.url, label: "Open PDF in a new tab" }}
           onClose={() => setShareOpen(false)}

@@ -73,17 +73,20 @@ function QrIcon({ className = "h-5 w-5" }: { className?: string }) {
 // WhatsApp / Email. Tags, website link, and delete all live in the
 // card's own "⋮" menu, not here — this stays focused on the one job of
 // sharing. Opens from clicking a card in BrochureManager.
+export const DEFAULT_SHARE_MESSAGE =
+  "Hello,\n\nExplore our collection of handcrafted lighting and lifestyle pieces through the catalogue link.\n\nYou can view and download the catalogue for reference. Sizes and finishes can also be customised to suit your requirements.";
+
 export function ShareModal({
   title,
   path,
-  defaultMessage,
+  defaultMessage = DEFAULT_SHARE_MESSAGE,
   preview,
   mobileLink,
   onClose,
 }: {
   title: string;
   path: string;
-  defaultMessage: string;
+  defaultMessage?: string;
   preview: ReactNode;
   mobileLink?: { href: string; label: string };
   onClose: () => void;
