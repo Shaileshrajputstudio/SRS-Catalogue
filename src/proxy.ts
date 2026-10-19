@@ -14,7 +14,7 @@ const PUBLIC_PREFIXES = [
   "/icons/",
   "/apple-touch-icon.png",
   "/manifest.webmanifest",
-  "/pdf.worker.min.mjs",
+  "/pdf.worker",
   "/files/",
 ];
 

@@ -117,6 +117,7 @@ export function PdfPreview({
   // blank white page for seconds with nothing saying it was working.
   const [pageLoading, setPageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   // Load the document once per url — also resets page/zoom/rotation, since
   // those apply to whichever document is currently open.
@@ -125,6 +126,7 @@ export function PdfPreview({
     setIsLoading(true);
     setProgress(null);
     setError(null);
+    setErrorDetail(null);
     setPage(1);
     setZoom(1);
     setRotation(0);
@@ -132,8 +134,14 @@ export function PdfPreview({
 
     (async () => {
       try {
-        const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        // Legacy build on purpose: the standard one assumes very recent
+        // JavaScript (Promise.withResolvers, Math.sumPrecise, ...) and
+        // simply fails to start on iPhones that haven't updated iOS, which
+        // is exactly where customers open a catalogue link from WhatsApp.
+        // The legacy build bundles the polyfills for those.
+        await import("@/lib/pdfPolyfills");
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.legacy.min.mjs";
         const loadingTask = pdfjsLib.getDocument({ url });
         loadingTask.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
           if (!cancelled && total) setProgress(Math.min(100, Math.round((loaded / total) * 100)));
@@ -144,9 +152,11 @@ export function PdfPreview({
         pdfRef.current = pdf;
         setNumPages(pdf.numPages);
         setIsLoading(false);
-      } catch {
+      } catch (err) {
+        console.error("PdfPreview: failed to load", err);
         if (!cancelled) {
           setError("Couldn't load a preview for this file.");
+          setErrorDetail(err instanceof Error ? err.message : String(err));
           setIsLoading(false);
         }
       }
@@ -267,17 +277,20 @@ export function PdfPreview({
           </div>
         )}
         {error && (
-          <div className="font-sans-ui max-w-[220px] text-center text-xs text-[var(--ink)]/50">
-            <p className="mb-3">{error}</p>
+          <div className="font-sans-ui flex max-w-[260px] flex-col items-center gap-4 text-center text-xs text-[var(--ink)]/60">
+            <p>{error}</p>
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-medium underline underline-offset-2 hover:text-[var(--ink)]"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
             >
-              Open PDF in a new tab
-              <ArrowOutwardIcon className="h-3 w-3" />
+              Open the PDF
+              <ArrowOutwardIcon className="h-3.5 w-3.5" />
             </a>
+            {errorDetail && (
+              <p className="max-w-full break-words text-[10px] text-[var(--ink)]/30">{errorDetail}</p>
+            )}
           </div>
         )}
         {!isLoading && !error && (
