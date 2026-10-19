@@ -58,6 +58,7 @@ export type R2Object = {
   pathname: string;
   url: string;
   uploadedAt: Date;
+  size: number;
 };
 
 export async function r2Put(
@@ -80,7 +81,7 @@ export async function r2List(prefix: string): Promise<R2Object[]> {
     );
     for (const item of result.Contents ?? []) {
       if (!item.Key) continue;
-      objects.push({ pathname: item.Key, url: publicUrlFor(item.Key), uploadedAt: item.LastModified ?? new Date(0) });
+      objects.push({ pathname: item.Key, url: publicUrlFor(item.Key), uploadedAt: item.LastModified ?? new Date(0), size: item.Size ?? 0 });
     }
     continuationToken = result.IsTruncated ? result.NextContinuationToken : undefined;
   } while (continuationToken);

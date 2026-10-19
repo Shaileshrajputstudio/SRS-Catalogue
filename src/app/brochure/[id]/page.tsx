@@ -8,6 +8,7 @@ import { studio } from "@/lib/studio";
 import { FloatingContact } from "@/components/FloatingContact";
 import { PdfIcon } from "@/components/PdfIcon";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
+import { ViewCatalogueButton } from "@/components/ViewCatalogueButton";
 
 // Always fresh — a brochure can be replaced or removed from the admin
 // panel at any time, and this page shouldn't serve a stale cached link.
@@ -119,14 +120,7 @@ export default async function BrochurePage({
         )}
 
         <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-between">
-          <a
-            href={brochure.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-sans-ui inline-flex items-center justify-center gap-2 rounded-full bg-[var(--ink)] px-6 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent)] hover:text-[var(--ink)]"
-          >
-            View / Download Catalogue (PDF)
-          </a>
+          <ViewCatalogueButton url={brochure.url} title={brochure.title} sizeBytes={brochure.sizeBytes} />
           {brochure.websiteLink && (
             <a
               href={buildWebsiteLinkHref(studio.website, brochure.websiteLink)}

@@ -46,6 +46,7 @@ export type Brochure = {
   websiteLink: WebsiteLink | null;
   catalogueType: CatalogueType;
   uploadedAt: string; // ISO
+  sizeBytes?: number; // shown next to the View button so a big file isn't a surprise
 };
 
 const PDF_RE = /^brochures\/([a-zA-Z0-9_-]+)--(.+)\.pdf$/;
@@ -190,6 +191,7 @@ export const getBrochures = cache(async (): Promise<Brochure[]> => {
       // rather than being lost from every tab.
       catalogueType: typeById.get(match[1]) ?? "general",
       uploadedAt: new Date(blob.uploadedAt).toISOString(),
+      sizeBytes: blob.size || undefined,
     });
   }
 

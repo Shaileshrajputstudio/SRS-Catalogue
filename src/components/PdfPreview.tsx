@@ -9,10 +9,10 @@ const MAX_ZOOM = 2;
 const ZOOM_STEP = 0.25;
 
 const iconButtonClass =
-  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink)]/70 transition hover:bg-[var(--ink)]/8 hover:text-[var(--ink)] disabled:opacity-25 disabled:hover:bg-transparent";
+  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9 text-[var(--ink)]/70 transition hover:bg-[var(--ink)]/8 hover:text-[var(--ink)] disabled:opacity-25 disabled:hover:bg-transparent";
 
 function Divider() {
-  return <span className="mx-1.5 h-5 w-px shrink-0 bg-[var(--line)]" aria-hidden="true" />;
+  return <span className="mx-0.5 h-5 w-px shrink-0 bg-[var(--line)] sm:mx-1.5" aria-hidden="true" />;
 }
 
 function ChevronLeftIcon({ className = "h-5 w-5" }: { className?: string }) {
@@ -90,7 +90,16 @@ function DownloadIcon({ className = "h-5 w-5" }: { className?: string }) {
 // toolbar, print/download icons, zoom controls) that looked out of place
 // dropped into a branded modal. The page itself, on paper, with our own
 // toolbar: rotate, zoom, page navigation, download.
-export function PdfPreview({ url, title }: { url: string; title: string }) {
+export function PdfPreview({
+  url,
+  title,
+  hideDownload = false,
+}: {
+  url: string;
+  title: string;
+  // The customer viewer already has a Download PDF button in its header.
+  hideDownload?: boolean;
+}) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pdfRef = useRef<PDFDocumentProxy | null>(null);
@@ -102,6 +111,11 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState<number | null>(null);
+  // The document opens (isLoading false) long before the current page has
+  // actually been fetched and drawn — without this the viewer sat on a
+  // blank white page for seconds with nothing saying it was working.
+  const [pageLoading, setPageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load the document once per url — also resets page/zoom/rotation, since
@@ -109,6 +123,7 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
+    setProgress(null);
     setError(null);
     setPage(1);
     setZoom(1);
@@ -120,6 +135,9 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
         const pdfjsLib = await import("pdfjs-dist");
         pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         const loadingTask = pdfjsLib.getDocument({ url });
+        loadingTask.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+          if (!cancelled && total) setProgress(Math.min(100, Math.round((loaded / total) * 100)));
+        };
         loadingTaskRef.current = loadingTask;
         const pdf = await loadingTask.promise;
         if (cancelled) return;
@@ -146,27 +164,32 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
   useEffect(() => {
     if (isLoading || error || !pdfRef.current || !viewportRef.current || !canvasRef.current) return;
     const token = ++renderTokenRef.current;
+    setPageLoading(true);
 
     (async () => {
-      const pdfPage = await pdfRef.current!.getPage(page);
-      if (renderTokenRef.current !== token) return;
+      try {
+        const pdfPage = await pdfRef.current!.getPage(page);
+        if (renderTokenRef.current !== token) return;
 
-      const canvas = canvasRef.current!;
-      const available = viewportRef.current!.clientWidth - 48;
-      const baseViewport = pdfPage.getViewport({ scale: 1, rotation });
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const fitScale = Math.min(available / baseViewport.width, 2);
-      const cssScale = fitScale * zoom;
-      const viewport = pdfPage.getViewport({ scale: cssScale * dpr, rotation });
+        const canvas = canvasRef.current!;
+        const available = viewportRef.current!.clientWidth - 48;
+        const baseViewport = pdfPage.getViewport({ scale: 1, rotation });
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const fitScale = Math.min(available / baseViewport.width, 2);
+        const cssScale = fitScale * zoom;
+        const viewport = pdfPage.getViewport({ scale: cssScale * dpr, rotation });
 
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      canvas.style.width = `${Math.round(viewport.width / dpr)}px`;
-      canvas.style.height = `${Math.round(viewport.height / dpr)}px`;
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        canvas.style.width = `${Math.round(viewport.width / dpr)}px`;
+        canvas.style.height = `${Math.round(viewport.height / dpr)}px`;
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      await pdfPage.render({ canvas, canvasContext: ctx, viewport }).promise;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        await pdfPage.render({ canvas, canvasContext: ctx, viewport }).promise;
+      } finally {
+        if (renderTokenRef.current === token) setPageLoading(false);
+      }
     })();
   }, [page, isLoading, error, zoom, rotation]);
 
@@ -188,6 +211,23 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
   function downloadPdf() {
     window.open(url, "_blank", "noopener,noreferrer");
   }
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = e.touches.length === 1 && zoom <= 1 ? { x: t.clientX, y: t.clientY } : null;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) goNext();
+      else goPrev();
+    }
+  }
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "ArrowLeft") goPrev();
     if (e.key === "ArrowRight") goNext();
@@ -195,11 +235,35 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
 
   return (
     <div className="flex h-full min-w-0 flex-col outline-none" tabIndex={0} onKeyDown={onKeyDown}>
-      <div ref={viewportRef} className="flex min-w-0 flex-1 items-center justify-center overflow-auto p-6">
+      <div
+        ref={viewportRef}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto p-6"
+      >
         {isLoading && (
-          <div className="font-sans-ui flex flex-col items-center gap-3 text-xs text-[var(--ink)]/40">
+          <div className="font-sans-ui flex flex-col items-center gap-3 text-center text-xs text-[var(--ink)]/50">
             <span className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--ink)]/15 border-t-[var(--ink)]/50" />
-            Loading preview…
+            <span>
+              Loading catalogue…{progress !== null && <span className="tabular-nums"> {progress}%</span>}
+            </span>
+            {progress !== null && (
+              <span className="block h-1 w-40 overflow-hidden rounded-full bg-[var(--ink)]/10">
+                <span
+                  className="block h-full rounded-full bg-[var(--ink)]/50 transition-[width] duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </span>
+            )}
+            <span className="max-w-[220px] text-[var(--ink)]/35">
+              It&apos;s a large file, thanks for waiting.
+            </span>
+          </div>
+        )}
+        {!isLoading && !error && pageLoading && (
+          <div className="font-sans-ui pointer-events-none absolute top-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--paper)]/90 px-3 py-1.5 text-xs text-[var(--ink)]/60 shadow-sm backdrop-blur">
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--ink)]/15 border-t-[var(--ink)]/60" />
+            Preparing page {page}…
           </div>
         )}
         {error && (
@@ -222,7 +286,7 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
       </div>
 
       {!isLoading && !error && (
-        <div className="font-sans-ui flex flex-wrap items-center justify-center gap-1.5 border-t border-[var(--line)] px-4 py-3">
+        <div className="font-sans-ui flex flex-wrap items-center justify-center gap-0.5 border-t border-[var(--line)] px-2 py-3 sm:gap-1.5 sm:px-4">
           <button type="button" onClick={rotate} aria-label="Rotate" className={iconButtonClass}>
             <RotateIcon />
           </button>
@@ -238,7 +302,7 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
           >
             <ZoomOutIcon />
           </button>
-          <span className="w-12 shrink-0 text-center text-sm tabular-nums text-[var(--ink)]/70">
+          <span className="w-11 shrink-0 text-center text-sm tabular-nums text-[var(--ink)]/70 sm:w-12">
             {Math.round(zoom * 100)}%
           </span>
           <button
@@ -263,7 +327,7 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
               >
                 <ChevronLeftIcon />
               </button>
-              <span className="min-w-[3.75rem] shrink-0 text-center text-sm tabular-nums text-[var(--ink)]/70">
+              <span className="min-w-[3.25rem] shrink-0 text-center text-sm tabular-nums text-[var(--ink)]/70 sm:min-w-[3.75rem]">
                 {page} / {numPages}
               </span>
               <button
@@ -278,11 +342,14 @@ export function PdfPreview({ url, title }: { url: string; title: string }) {
             </>
           )}
 
-          <Divider />
-
-          <button type="button" onClick={downloadPdf} aria-label="Download" className={iconButtonClass}>
-            <DownloadIcon />
-          </button>
+          {!hideDownload && (
+            <>
+              <Divider />
+              <button type="button" onClick={downloadPdf} aria-label="Download" className={iconButtonClass}>
+                <DownloadIcon />
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
