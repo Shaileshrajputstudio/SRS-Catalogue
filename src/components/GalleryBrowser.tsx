@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { CatalogueTypeDef } from "@/lib/catalogueTypes";
-import type { Region } from "@/lib/regions";
+import { REGIONS, regionDef, type Region } from "@/lib/regions";
 import { PdfIcon } from "@/components/PdfIcon";
 
 // The public counterpart to BrochureManager's admin library view — same
@@ -32,7 +32,30 @@ export function GalleryBrowser({
   );
 
   if (brochures.length === 0) {
-    return <p className="font-sans-ui text-sm text-[var(--ink)]/50">Nothing published yet — check back soon.</p>;
+    const other = REGIONS.find((r) => r.key !== region);
+    return (
+      <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--line)] px-6 py-20 text-center">
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--paper-2)]/70">
+          <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7 text-[var(--ink)]/45" aria-hidden="true">
+            <rect x="4" y="8" width="13" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M7.5 5h11a1.5 1.5 0 0 1 1.5 1.5V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M7.5 13h7M7.5 16.5h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <p className="mb-2 text-xl text-[var(--ink)]">Catalogues coming soon</p>
+        <p className="font-sans-ui mb-5 max-w-xs text-sm text-[var(--ink)]/50">
+          We&apos;re preparing the {regionDef(region).label} catalogues. Please check back shortly.
+        </p>
+        {other && (
+          <Link
+            href={`/gallery/${other.key}`}
+            className="font-sans-ui inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
+          >
+            View {other.label} catalogues →
+          </Link>
+        )}
+      </div>
+    );
   }
 
   return (
