@@ -60,12 +60,6 @@ export default async function RegionGalleryPage({ params }: { params: Promise<{ 
         <p className="max-w-xl text-[var(--ink)]/70">
           Browse the full SRS collection. Tap any catalogue to view or download it.
         </p>
-        <Link
-          href="/gallery"
-          className="font-sans-ui mt-3 inline-block text-sm text-[var(--ink)]/60 underline-offset-2 hover:text-[var(--ink)] hover:underline"
-        >
-          Not in {def.label}? Switch region
-        </Link>
       </section>
 
       <section className="mb-16 flex-1">

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { CatalogueTypeDef } from "@/lib/catalogueTypes";
-import { REGIONS, regionDef, type Region } from "@/lib/regions";
+import { regionDef, type Region } from "@/lib/regions";
 import { PdfIcon } from "@/components/PdfIcon";
 
 // The public counterpart to BrochureManager's admin library view — same
@@ -32,7 +32,6 @@ export function GalleryBrowser({
   );
 
   if (brochures.length === 0) {
-    const other = REGIONS.find((r) => r.key !== region);
     return (
       <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--line)] px-6 py-20 text-center">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--paper-2)]/70">
@@ -43,17 +42,9 @@ export function GalleryBrowser({
           </svg>
         </div>
         <p className="mb-2 text-xl text-[var(--ink)]">Catalogues coming soon</p>
-        <p className="font-sans-ui mb-5 max-w-xs text-sm text-[var(--ink)]/50">
+        <p className="font-sans-ui max-w-xs text-sm text-[var(--ink)]/50">
           We&apos;re preparing the {regionDef(region).label} catalogues. Please check back shortly.
         </p>
-        {other && (
-          <Link
-            href={`/gallery/${other.key}`}
-            className="font-sans-ui inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
-          >
-            View {other.label} catalogues →
-          </Link>
-        )}
       </div>
     );
   }
