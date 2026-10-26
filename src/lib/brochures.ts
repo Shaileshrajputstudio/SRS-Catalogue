@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { r2List } from "./r2";
 import { encodeWebsiteLink, decodeWebsiteLink, type WebsiteLink } from "./websiteLink";
+import { DEFAULT_REGION, isRegion, type Region } from "./regions";
 
 // Server-only: reads BLOB_READ_WRITE_TOKEN, so this must only ever be
 // imported from Server Components / Server Actions / Route Handlers,
@@ -45,6 +46,7 @@ export type Brochure = {
   tags: string[];
   websiteLink: WebsiteLink | null;
   catalogueType: CatalogueType;
+  region: Region; // which hub (India / Rest of World) it's published in
   uploadedAt: string; // ISO
   sizeBytes?: number; // shown next to the View button so a big file isn't a surprise
 };
@@ -55,9 +57,12 @@ const TAGS_RE = /^brochure-tags\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
 const CATEGORY_RE = /^brochure-category\/([a-zA-Z0-9_-]+)--(.*)\.json$/;
 const TYPE_RE = /^brochure-type\/([a-zA-Z0-9_-]+)--([a-z0-9]+(?:-[a-z0-9]+)*)\.json$/;
 
+const REGION_RE = /^brochure-region\/([a-zA-Z0-9_-]+)--(india|row)\.json$/;
+
 export const TAGS_PREFIX = "brochure-tags/";
 export const CATEGORY_PREFIX = "brochure-category/";
 export const TYPE_PREFIX = "brochure-type/";
+export const REGION_PREFIX = "brochure-region/";
 
 export function buildBrochurePathname(id: string, title: string): string {
   return `brochures/${id}--${encodeURIComponent(title)}.pdf`;
@@ -76,6 +81,12 @@ export function buildTagsPathname(id: string, tags: string[]): string {
 // tags, but single-valued. See websiteLink.ts for the encoding.
 export function buildWebsiteLinkPathname(id: string, link: WebsiteLink): string {
   return `${CATEGORY_PREFIX}${id}--${encodeWebsiteLink(link)}.json`;
+}
+
+// Same pathname-encoding pattern as the catalogue type: one marker object
+// per brochure, the value lives in the key itself.
+export function buildRegionPathname(id: string, region: Region): string {
+  return `${REGION_PREFIX}${id}--${region}.json`;
 }
 
 export function buildTypePathname(id: string, type: CatalogueType): string {
@@ -130,12 +141,13 @@ export function shareTag(a: string[], b: string[]): boolean {
 export const getBrochures = cache(async (): Promise<Brochure[]> => {
   if (!process.env.R2_ACCOUNT_ID) return [];
 
-  const [pdfList, thumbList, tagsList, categoryList, typeList] = await Promise.all([
+  const [pdfList, thumbList, tagsList, categoryList, typeList, regionList] = await Promise.all([
     r2List("brochures/"),
     r2List("brochure-thumbs/"),
     r2List(TAGS_PREFIX),
     r2List(CATEGORY_PREFIX),
     r2List(TYPE_PREFIX),
+    r2List(REGION_PREFIX),
   ]);
 
   const thumbById = new Map<string, string>();
@@ -170,6 +182,12 @@ export const getBrochures = cache(async (): Promise<Brochure[]> => {
     if (match) typeById.set(match[1], match[2] as CatalogueType);
   }
 
+  const regionById = new Map<string, Region>();
+  for (const blob of regionList) {
+    const match = blob.pathname.match(REGION_RE);
+    if (match && isRegion(match[2])) regionById.set(match[1], match[2]);
+  }
+
   const brochures: Brochure[] = [];
   for (const blob of pdfList) {
     const match = blob.pathname.match(PDF_RE);
@@ -190,6 +208,8 @@ export const getBrochures = cache(async (): Promise<Brochure[]> => {
       // Brochures uploaded before this field existed default to "general"
       // rather than being lost from every tab.
       catalogueType: typeById.get(match[1]) ?? "general",
+      // Brochures from before regions existed were all the India catalogue.
+      region: regionById.get(match[1]) ?? DEFAULT_REGION,
       uploadedAt: new Date(blob.uploadedAt).toISOString(),
       sizeBytes: blob.size || undefined,
     });

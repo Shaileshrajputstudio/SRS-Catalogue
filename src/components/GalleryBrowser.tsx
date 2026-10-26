@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { CatalogueTypeDef } from "@/lib/catalogueTypes";
+import type { Region } from "@/lib/regions";
 import { PdfIcon } from "@/components/PdfIcon";
 
 // The public counterpart to BrochureManager's admin library view — same
@@ -13,9 +14,11 @@ import { PdfIcon } from "@/components/PdfIcon";
 export function GalleryBrowser({
   brochures,
   catalogueTypes,
+  region,
 }: {
   brochures: Brochure[];
   catalogueTypes: CatalogueTypeDef[];
+  region: Region;
 }) {
   const nonEmptyTypes = useMemo(
     () => catalogueTypes.filter((t) => brochures.some((b) => b.catalogueType === t.key)),
@@ -54,7 +57,7 @@ export function GalleryBrowser({
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3">
         {visible.map((brochure) => (
-          <Link key={brochure.id} href={`/brochure/${brochure.id}?from=gallery`} className="group block">
+          <Link key={brochure.id} href={`/brochure/${brochure.id}?from=gallery-${region}`} className="group block">
             <div className="mb-2 flex aspect-[297/210] items-center justify-center overflow-hidden rounded-xl border border-[var(--line)] bg-white">
               {brochure.thumbnailUrl ? (
                 <Image

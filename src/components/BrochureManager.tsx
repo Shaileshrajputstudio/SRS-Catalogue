@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Brochure, CatalogueType } from "@/lib/brochures";
 import type { WebsiteLinkOptions } from "@/lib/websiteLink";
 import type { CatalogueTypeDef } from "@/lib/catalogueTypes";
@@ -10,6 +10,9 @@ import { ManageTabsModal } from "@/components/ManageTabsModal";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
 import { ShareModal } from "@/components/ShareModal";
 import { Toast } from "@/components/Toast";
+import { REGIONS, regionDef, isRegion, DEFAULT_REGION, type Region } from "@/lib/regions";
+
+const REGION_STORAGE_KEY = "srs-hub-region";
 
 // A toast is visible for 2.6s (matches the CSS animation in
 // globals.css) — showToast clears any still-running timer first so a
@@ -98,11 +101,32 @@ export function BrochureManager({
   const [uploadOpen, setUploadOpen] = useState(false);
   const [manageTabsOpen, setManageTabsOpen] = useState(false);
   const [galleryQrOpen, setGalleryQrOpen] = useState(false);
+  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
   const [activeTab, setActiveTab] = useState<CatalogueType>(
     initialCatalogueTypes[0]?.key ?? "general",
   );
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Remember which hub the admin was last working in. Read after mount
+  // (not in the initial state) so server and client render the same HTML.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(REGION_STORAGE_KEY);
+      if (saved && isRegion(saved)) setRegion(saved);
+    } catch {
+      // Storage can be blocked — the default hub is fine.
+    }
+  }, []);
+
+  function chooseRegion(next: Region) {
+    setRegion(next);
+    try {
+      localStorage.setItem(REGION_STORAGE_KEY, next);
+    } catch {
+      // Not worth surfacing.
+    }
+  }
 
   function showToast(message: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -112,21 +136,34 @@ export function BrochureManager({
 
   // Every distinct tag already in use, for the tag-input's suggestions —
   // recomputed whenever the library changes.
+  // Everything below the hub switch only deals with the active hub's
+  // catalogues; `brochures` stays the full list across both hubs.
+  const hubBrochures = useMemo(() => brochures.filter((b) => b.region === region), [brochures, region]);
+
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    for (const b of brochures) for (const t of b.tags) set.add(t);
+    for (const b of hubBrochures) for (const t of b.tags) set.add(t);
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [brochures]);
+  }, [hubBrochures]);
 
   const countByType = useMemo(() => {
+    const counts: Record<string, number> = Object.fromEntries(catalogueTypes.map((t) => [t.key, 0]));
+    for (const b of hubBrochures) counts[b.catalogueType] = (counts[b.catalogueType] ?? 0) + 1;
+    return counts;
+  }, [hubBrochures, catalogueTypes]);
+
+  // Manage Tabs shows how many catalogues a tab holds before it's
+  // deleted — that delete re-types every hub's catalogues, so it needs the
+  // all-hubs count, not just the active hub's.
+  const totalCountByType = useMemo(() => {
     const counts: Record<string, number> = Object.fromEntries(catalogueTypes.map((t) => [t.key, 0]));
     for (const b of brochures) counts[b.catalogueType] = (counts[b.catalogueType] ?? 0) + 1;
     return counts;
   }, [brochures, catalogueTypes]);
 
   const visible = useMemo(
-    () => brochures.filter((b) => b.catalogueType === activeTab),
-    [brochures, activeTab],
+    () => hubBrochures.filter((b) => b.catalogueType === activeTab),
+    [hubBrochures, activeTab],
   );
 
   // Called after Manage Tabs adds/renames/reorders/deletes a tab — keeps
@@ -149,6 +186,7 @@ export function BrochureManager({
   function handleUploaded(brochure: Brochure) {
     setBrochures((prev) => [brochure, ...prev]);
     setUploadOpen(false);
+    chooseRegion(brochure.region);
     setActiveTab(brochure.catalogueType);
     showToast(`"${brochure.title}" uploaded`);
   }
@@ -156,6 +194,11 @@ export function BrochureManager({
   function handleDeleted(id: string, title: string) {
     setBrochures((prev) => prev.filter((b) => b.id !== id));
     showToast(`"${title}" removed`);
+  }
+
+  function handleRegionChanged(id: string, next: Region) {
+    setBrochures((prev) => prev.map((b) => (b.id === id ? { ...b, region: next } : b)));
+    showToast(`Moved to ${regionDef(next).label}`);
   }
 
   function handleTagsSaved(id: string, tags: string[]) {
@@ -179,7 +222,7 @@ export function BrochureManager({
             className="font-sans-ui inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[#F6F3E8] px-5 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:border-[var(--ink)]"
           >
             <QrIcon className="h-4.5 w-4.5" />
-            Share Platform
+            Share {regionDef(region).label} Hub
           </button>
           <button
             onClick={() => setUploadOpen(true)}
@@ -188,6 +231,25 @@ export function BrochureManager({
             + Upload Catalogue
           </button>
         </div>
+      </div>
+
+      <div className="font-sans-ui mb-4 inline-flex rounded-full border border-[var(--line)] bg-[#F6F3E8] p-1" role="tablist" aria-label="Catalogue hub">
+        {REGIONS.map((r) => {
+          const count = brochures.filter((b) => b.region === r.key).length;
+          return (
+            <button
+              key={r.key}
+              role="tab"
+              aria-selected={region === r.key}
+              onClick={() => chooseRegion(r.key)}
+              className={`rounded-full px-4 py-2 text-sm whitespace-nowrap transition ${
+                region === r.key ? "bg-[var(--ink)] text-white" : "text-[var(--ink)]/60 hover:text-[var(--ink)]"
+              }`}
+            >
+              {r.label} <span className={region === r.key ? "text-white/60" : "text-[var(--ink)]/40"}>{r.currency} · {count}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="font-sans-ui mb-8 flex items-center gap-1 border-y border-[var(--line)] py-1">
@@ -227,15 +289,15 @@ export function BrochureManager({
             <EmptyLibraryIcon className="h-7 w-7 text-[var(--ink)]/45" />
           </div>
           <p className="font-sans-ui mb-4 text-sm text-[var(--ink)]/50">
-            {brochures.length === 0
-              ? "Nothing here yet — the first catalogue starts the library."
+            {hubBrochures.length === 0
+              ? `Nothing in the ${regionDef(region).label} hub yet — the first catalogue starts it.`
               : `No ${catalogueTypes.find((t) => t.key === activeTab)?.label.toLowerCase()} catalogues yet.`}
           </p>
           <button
             onClick={() => setUploadOpen(true)}
             className="font-sans-ui inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)] underline-offset-2 hover:underline"
           >
-            Upload {brochures.length === 0 ? "your first catalogue" : "a catalogue"}
+            Upload {hubBrochures.length === 0 ? "your first catalogue" : "a catalogue"}
             <ArrowForwardIcon className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -248,6 +310,7 @@ export function BrochureManager({
               allTags={allTags}
               onDeleted={handleDeleted}
               onTagsSaved={handleTagsSaved}
+              onRegionChanged={handleRegionChanged}
             />
           ))}
         </div>
@@ -267,6 +330,7 @@ export function BrochureManager({
           allTags={allTags}
           websiteLinkOptions={websiteLinkOptions}
           catalogueTypes={catalogueTypes}
+          region={region}
           onClose={() => setUploadOpen(false)}
           onUploaded={handleUploaded}
         />
@@ -275,7 +339,7 @@ export function BrochureManager({
       {manageTabsOpen && (
         <ManageTabsModal
           catalogueTypes={catalogueTypes}
-          counts={countByType}
+          counts={totalCountByType}
           onClose={() => setManageTabsOpen(false)}
           onTypesChange={handleTypesChanged}
           onBrochuresRetyped={handleBrochuresRetyped}
@@ -284,10 +348,10 @@ export function BrochureManager({
 
       {galleryQrOpen && (
         <ShareModal
-          title="SRS Catalogue Hub"
-          path="/gallery"
-          preview={<iframe src="/gallery" title="Gallery preview" className="h-full w-full border-0" />}
-          mobileLink={{ href: "/gallery", label: "Open gallery in a new tab" }}
+          title={`SRS Catalogue Hub — ${regionDef(region).label}`}
+          path={`/gallery/${region}`}
+          preview={<iframe src={`/gallery/${region}`} title="Gallery preview" className="h-full w-full border-0" />}
+          mobileLink={{ href: `/gallery/${region}`, label: "Open gallery in a new tab" }}
           onClose={() => setGalleryQrOpen(false)}
         />
       )}

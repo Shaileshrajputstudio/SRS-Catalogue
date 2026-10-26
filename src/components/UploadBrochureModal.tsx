@@ -8,7 +8,13 @@ import { websiteLinkKindFor, type CatalogueTypeDef } from "@/lib/catalogueTypes"
 import { renderFirstPageToPng } from "@/lib/pdfThumbnail";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
-import { updateBrochureTags, updateBrochureWebsiteLink, updateBrochureType } from "@/app/actions/brochures";
+import {
+  updateBrochureTags,
+  updateBrochureWebsiteLink,
+  updateBrochureType,
+  updateBrochureRegion,
+} from "@/app/actions/brochures";
+import { REGIONS, DEFAULT_REGION, type Region } from "@/lib/regions";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 function UploadCloudIcon({ className = "h-6 w-6" }: { className?: string }) {
@@ -48,17 +54,20 @@ export function UploadBrochureModal({
   websiteLinkOptions,
   catalogueTypes,
   onClose,
+  region: initialRegion,
   onUploaded,
 }: {
   allTags: string[];
   websiteLinkOptions: WebsiteLinkOptions;
   catalogueTypes: CatalogueTypeDef[];
   onClose: () => void;
+  region: Region;
   onUploaded: (brochure: Brochure) => void;
 }) {
   useBodyScrollLock(true);
   const [title, setTitle] = useState("");
   const [catalogueType, setCatalogueType] = useState<CatalogueType | null>(null);
+  const [region, setRegion] = useState<Region>(initialRegion);
   const [tags, setTags] = useState<string[]>([]);
   const [linkSelection, setLinkSelection] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -176,6 +185,15 @@ export function UploadBrochureModal({
         // Non-fatal — the brochure still gets created.
       }
 
+      let savedRegion: Region = region;
+      try {
+        setStatusText("Saving hub…");
+        savedRegion = await updateBrochureRegion(id, region);
+      } catch {
+        // Non-fatal — an unmarked brochure shows up in the India hub.
+        savedRegion = DEFAULT_REGION;
+      }
+
       onUploaded({
         id,
         title: trimmedTitle,
@@ -184,6 +202,7 @@ export function UploadBrochureModal({
         tags: savedTags,
         websiteLink: savedLink,
         catalogueType: savedType,
+        region: savedRegion,
         uploadedAt: new Date().toISOString(),
       });
     } catch (err) {
@@ -217,6 +236,25 @@ export function UploadBrochureModal({
           >
             ✕
           </button>
+        </div>
+
+        <p className="font-sans-ui mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">Hub</p>
+        <div className="mb-5 flex gap-2">
+          {REGIONS.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              disabled={isBusy}
+              onClick={() => setRegion(r.key)}
+              className={`font-sans-ui flex-1 rounded-full border px-3 py-2.5 text-sm transition disabled:opacity-60 ${
+                region === r.key
+                  ? "border-[var(--ink)] bg-[var(--ink)] text-white"
+                  : "border-[var(--line)] bg-[#F6F3E8] text-[var(--ink)]/70 hover:border-[var(--ink)]"
+              }`}
+            >
+              {r.label} <span className={region === r.key ? "text-white/60" : "text-[var(--ink)]/40"}>{r.currency}</span>
+            </button>
+          ))}
         </div>
 
         <label

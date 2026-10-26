@@ -70,13 +70,26 @@ export default async function BrochurePage({
   // someone arrived via the public gallery rather than one specific
   // brochure link — falls back to this page's own id when there's no
   // "from" at all (i.e. this *is* the originally-shared one).
-  const originId = from === "gallery" || (from && all.some((b) => b.id === from)) ? from : id;
-  const originHref = originId === "gallery" ? "/gallery" : `/brochure/${originId}`;
+  const isGalleryOrigin = from === "gallery" || from === "gallery-india" || from === "gallery-row";
+  const originId = isGalleryOrigin || (from && all.some((b) => b.id === from)) ? from : id;
+  const originHref =
+    originId === "gallery"
+      ? "/gallery"
+      : originId === "gallery-india" || originId === "gallery-row"
+        ? `/gallery/${originId.slice("gallery-".length)}`
+        : `/brochure/${originId}`;
 
-  // Same Catalogue Type only — a Product catalogue shouldn't cross-sell a
+  // Same hub (India / Rest of World) first — an INR catalogue must never
+  // cross-sell a USD one — then same Catalogue Type only — a Product catalogue shouldn't cross-sell a
   // Story or General one just because both happen to be untagged.
   const others = all
-    .filter((b) => b.id !== id && b.catalogueType === brochure.catalogueType && shareTag(brochure.tags, b.tags))
+    .filter(
+      (b) =>
+        b.id !== id &&
+        b.region === brochure.region &&
+        b.catalogueType === brochure.catalogueType &&
+        shareTag(brochure.tags, b.tags),
+    )
     .slice(0, 8);
 
   return (

@@ -1,11 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getBrochures } from "@/lib/brochures";
-import { getCatalogueTypes } from "@/lib/catalogueTypesStore";
 import { studio } from "@/lib/studio";
 import { FloatingContact } from "@/components/FloatingContact";
-import { GalleryBrowser } from "@/components/GalleryBrowser";
+import { REGIONS } from "@/lib/regions";
 
 // Always fresh — a brochure can be added or removed from the admin panel
 // at any time, and this is the one page most likely to be open on a
@@ -22,9 +20,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function GalleryPage() {
-  const [brochures, catalogueTypes] = await Promise.all([getBrochures(), getCatalogueTypes()]);
-
+// The platform now has one hub per region (India / Rest of World), each
+// with its own link and QR code. Anyone arriving on the bare /gallery —
+// including from a QR code printed before regions existed — picks theirs.
+export default function GalleryChooserPage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-6 sm:py-8">
       <Link href="/gallery" className="mb-6 inline-block w-fit">
@@ -40,14 +39,30 @@ export default async function GalleryPage() {
       </Link>
 
       <section className="mb-10">
-        <h1 className="mb-3 text-3xl leading-tight sm:text-4xl">Every catalogue, in one place.</h1>
+        <h1 className="mb-3 text-3xl leading-tight sm:text-4xl">Choose your region.</h1>
         <p className="max-w-xl text-[var(--ink)]/70">
-          Browse the full SRS collection. Tap any catalogue to view or download it.
+          Catalogues are priced for your market. Pick where you are to see the right one.
         </p>
       </section>
 
       <section className="mb-16 flex-1">
-        <GalleryBrowser brochures={brochures} catalogueTypes={catalogueTypes} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {REGIONS.map((r) => (
+            <Link
+              key={r.key}
+              href={`/gallery/${r.key}`}
+              className="group rounded-2xl border border-[var(--line)] bg-[#F6F3E8] p-8 transition hover:border-[var(--ink)]"
+            >
+              <p className="font-sans-ui mb-2 text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
+                Prices in {r.currency}
+              </p>
+              <p className="text-2xl text-[var(--ink)]">{r.label}</p>
+              <p className="font-sans-ui mt-4 text-sm text-[var(--ink)]/60 group-hover:text-[var(--ink)]">
+                View catalogues →
+              </p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <div className="font-sans-ui mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-6 text-xs text-[var(--ink)]/40">

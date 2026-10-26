@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import type { Brochure } from "@/lib/brochures";
 import { buildBrochurePathname } from "@/lib/brochures";
-import { deleteBrochure, updateBrochureTags } from "@/app/actions/brochures";
+import { deleteBrochure, updateBrochureTags, updateBrochureRegion } from "@/app/actions/brochures";
+import { REGIONS, regionDef, type Region } from "@/lib/regions";
 import { PdfIcon } from "@/components/PdfIcon";
 import { TagInput } from "@/components/TagInput";
 import { ShareModal } from "@/components/ShareModal";
@@ -57,16 +58,19 @@ export function BrochureCard({
   allTags,
   onDeleted,
   onTagsSaved,
+  onRegionChanged,
 }: {
   brochure: Brochure;
   allTags: string[];
   onDeleted: (id: string, title: string) => void;
   onTagsSaved: (id: string, tags: string[]) => void;
+  onRegionChanged: (id: string, region: Region) => void;
 }) {
   const [shareOpen, setShareOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [tags, setTags] = useState(brochure.tags);
   const [isSavingTags, startTagsTransition] = useTransition();
+  const [isMoving, startMoveTransition] = useTransition();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [isDeleting, startDeleteTransition] = useTransition();
   useBodyScrollLock(menuOpen || confirmingRemove);
@@ -86,6 +90,16 @@ export function BrochureCard({
       const saved = await updateBrochureTags(brochure.id, next);
       setTags(saved);
       onTagsSaved(brochure.id, saved);
+    });
+  }
+
+  // Moves the catalogue to the other hub — it then disappears from this
+  // hub's list (the manager filters by region) and shows up in the other.
+  function moveToRegion(next: Region) {
+    startMoveTransition(async () => {
+      const saved = await updateBrochureRegion(brochure.id, next);
+      setMenuOpen(false);
+      onRegionChanged(brochure.id, saved);
     });
   }
 
@@ -193,6 +207,30 @@ export function BrochureCard({
             </label>
             <p className="text-sm text-[var(--ink)]">
               {brochure.websiteLink ? brochure.websiteLink.label : "No Website Link"}
+            </p>
+
+            <label className="mt-4 mb-2 block text-xs tracking-[0.2em] text-[var(--ash)] uppercase">
+              Hub
+            </label>
+            <div className="flex gap-2">
+              {REGIONS.map((r) => (
+                <button
+                  key={r.key}
+                  type="button"
+                  disabled={isMoving || r.key === brochure.region}
+                  onClick={() => moveToRegion(r.key)}
+                  className={`flex-1 rounded-full border px-3 py-2 text-xs transition ${
+                    r.key === brochure.region
+                      ? "border-[var(--ink)] bg-[var(--ink)] text-white"
+                      : "border-[var(--line)] text-[var(--ink)]/70 hover:border-[var(--ink)] disabled:opacity-50"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-[var(--ink)]/40">
+              {isMoving ? "Moving…" : `Prices in ${regionDef(brochure.region).currency}. Tap the other hub to move it.`}
             </p>
 
             {/* A clear divider (not just a margin bump) so this destructive

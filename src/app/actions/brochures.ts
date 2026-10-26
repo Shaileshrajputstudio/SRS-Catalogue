@@ -7,13 +7,16 @@ import {
   buildTagsPathname,
   buildWebsiteLinkPathname,
   buildTypePathname,
+  buildRegionPathname,
   normalizeTags,
   isCatalogueType,
   TAGS_PREFIX,
   CATEGORY_PREFIX,
   TYPE_PREFIX,
+  REGION_PREFIX,
   type CatalogueType,
 } from "@/lib/brochures";
+import { isRegion, DEFAULT_REGION, type Region } from "@/lib/regions";
 import { getWebsiteLinkOptions } from "@/lib/websiteCategories";
 import { parseWebsiteLinkSelection, type WebsiteLink } from "@/lib/websiteLink";
 
@@ -27,10 +30,11 @@ export async function deleteBrochure(pdfPathname: string, id: string): Promise<v
   // R2 delete doesn't error when a key doesn't exist, so it's safe to
   // always try the thumbnail (and any tags/category/type object) too even
   // for brochures that never got one.
-  const [existingTags, existingCategory, existingType] = await Promise.all([
+  const [existingTags, existingCategory, existingType, existingRegion] = await Promise.all([
     r2List(`${TAGS_PREFIX}${id}--`),
     r2List(`${CATEGORY_PREFIX}${id}--`),
     r2List(`${TYPE_PREFIX}${id}--`),
+    r2List(`${REGION_PREFIX}${id}--`),
   ]);
   await Promise.all([
     r2Del(pdfPathname),
@@ -38,6 +42,7 @@ export async function deleteBrochure(pdfPathname: string, id: string): Promise<v
     ...existingTags.map((b) => r2Del(b.pathname)),
     ...existingCategory.map((b) => r2Del(b.pathname)),
     ...existingType.map((b) => r2Del(b.pathname)),
+    ...existingRegion.map((b) => r2Del(b.pathname)),
   ]);
   revalidatePath("/");
 }
@@ -95,4 +100,20 @@ export async function updateBrochureType(id: string, rawType: string): Promise<C
 
   revalidatePath("/");
   return type;
+}
+
+// Which hub (India / Rest of World) a catalogue is published in — always
+// exactly one. Same delete-then-write pathname pattern as the type.
+export async function updateBrochureRegion(id: string, rawRegion: string): Promise<Region> {
+  const region: Region = isRegion(rawRegion) ? rawRegion : DEFAULT_REGION;
+
+  const existing = await r2List(`${REGION_PREFIX}${id}--`);
+  await Promise.all(existing.map((b) => r2Del(b.pathname)));
+
+  await r2Put(buildRegionPathname(id, region), JSON.stringify({ region }), "application/json");
+
+  revalidatePath("/");
+  revalidatePath(`/brochure/${id}`);
+  revalidatePath("/gallery", "layout");
+  return region;
 }
