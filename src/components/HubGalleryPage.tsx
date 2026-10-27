@@ -1,26 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getBrochures } from "@/lib/brochures";
 import { getCatalogueTypes } from "@/lib/catalogueTypesStore";
 import { studio } from "@/lib/studio";
 import { FloatingContact } from "@/components/FloatingContact";
 import { GalleryBrowser } from "@/components/GalleryBrowser";
-import { isRegion, regionDef } from "@/lib/regions";
+import { hubPath, regionDef, type Region } from "@/lib/regions";
 
-// Always fresh — a brochure can be added or removed from the admin panel
-// at any time, and this is the one page most likely to be open on a
-// shared screen at an event for a whole day.
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ region: string }>;
-}): Promise<Metadata> {
-  const { region } = await params;
-  if (!isRegion(region)) return {};
+// One hub's public gallery — rendered by /gallery (India) and /world (Rest of
+// World), each of which is force-dynamic: a brochure can be added or removed
+// from the admin panel at any time, and this is the page most likely to be
+// open on a shared screen at an event for a whole day.
+export function hubMetadata(region: Region): Metadata {
   const label = regionDef(region).label;
   const description = `Browse every ${label} catalogue from ${studio.name} in one place.`;
   return {
@@ -30,9 +22,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function RegionGalleryPage({ params }: { params: Promise<{ region: string }> }) {
-  const { region } = await params;
-  if (!isRegion(region)) notFound();
+export async function HubGalleryPage({ region }: { region: Region }) {
   const def = regionDef(region);
 
   const [all, catalogueTypes] = await Promise.all([getBrochures(), getCatalogueTypes()]);
@@ -40,7 +30,7 @@ export default async function RegionGalleryPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-6 sm:py-8">
-      <Link href={`/gallery/${region}`} className="mb-6 inline-block w-fit">
+      <Link href={hubPath(region)} className="mb-6 inline-block w-fit">
         <Image
           src="/brand/srs-logo.png"
           alt={studio.name}

@@ -114,6 +114,7 @@ export async function updateBrochureRegion(id: string, rawRegion: string): Promi
 
   revalidatePath("/");
   revalidatePath(`/brochure/${id}`);
-  revalidatePath("/gallery", "layout");
+  revalidatePath("/gallery");
+  revalidatePath("/world");
   return region;
 }

@@ -22,7 +22,7 @@ const PUBLIC_PREFIXES = [
 // full gallery a platform-wide QR code lands on) are intentionally open
 // — no PIN. Only the admin dashboard (root "/") and the brochure-upload
 // API stay behind ADMIN_PASSWORD.
-const CLIENT_PREFIXES = ["/brochure/", "/gallery"];
+const CLIENT_PREFIXES = ["/brochure/", "/gallery", "/world"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

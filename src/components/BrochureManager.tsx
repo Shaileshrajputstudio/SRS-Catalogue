@@ -10,7 +10,7 @@ import { ManageTabsModal } from "@/components/ManageTabsModal";
 import { ArrowForwardIcon } from "@/components/ArrowIcons";
 import { ShareModal } from "@/components/ShareModal";
 import { Toast } from "@/components/Toast";
-import { REGIONS, regionDef, isRegion, DEFAULT_REGION, type Region } from "@/lib/regions";
+import { REGIONS, regionDef, hubPath, isRegion, DEFAULT_REGION, type Region } from "@/lib/regions";
 
 const REGION_STORAGE_KEY = "srs-hub-region";
 
@@ -349,9 +349,9 @@ export function BrochureManager({
       {galleryQrOpen && (
         <ShareModal
           title={`SRS Catalogue Hub — ${regionDef(region).label}`}
-          path={`/gallery/${region}`}
-          preview={<iframe src={`/gallery/${region}`} title="Gallery preview" className="h-full w-full border-0" />}
-          mobileLink={{ href: `/gallery/${region}`, label: "Open gallery in a new tab" }}
+          path={hubPath(region)}
+          preview={<iframe src={hubPath(region)} title="Gallery preview" className="h-full w-full border-0" />}
+          mobileLink={{ href: hubPath(region), label: "Open gallery in a new tab" }}
           onClose={() => setGalleryQrOpen(false)}
         />
       )}

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getBrochures, shareTag } from "@/lib/brochures";
 import { buildWebsiteLinkHref } from "@/lib/websiteLink";
 import { studio } from "@/lib/studio";
+import { hubPath, isRegion } from "@/lib/regions";
 import { FloatingContact } from "@/components/FloatingContact";
 import { PdfIcon } from "@/components/PdfIcon";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
@@ -72,14 +73,14 @@ export default async function BrochurePage({
   // "from" at all (i.e. this *is* the originally-shared one).
   const isGalleryOrigin = from === "gallery" || from === "gallery-india" || from === "gallery-row";
   const originId = isGalleryOrigin || (from && all.some((b) => b.id === from)) ? from : id;
-  // The bare /gallery no longer exists (it would have to pick a hub for
-  // the visitor), so an old ?from=gallery link falls back to the hub this
-  // catalogue itself belongs to.
+  // Back to the hub it came from: gallery-<region> says which, and an old
+  // plain ?from=gallery (the India hub's original link) falls back to the
+  // hub this catalogue itself belongs to.
   const originHref =
-    originId === "gallery"
-      ? `/gallery/${brochure.region}`
-      : originId === "gallery-india" || originId === "gallery-row"
-        ? `/gallery/${originId.slice("gallery-".length)}`
+    originId.startsWith("gallery-") && isRegion(originId.slice("gallery-".length))
+      ? hubPath(originId.slice("gallery-".length) as "india" | "row")
+      : originId === "gallery"
+        ? hubPath(brochure.region)
         : `/brochure/${originId}`;
 
   // Same hub (India / Rest of World) first — an INR catalogue must never

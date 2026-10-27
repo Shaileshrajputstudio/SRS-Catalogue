@@ -26,3 +26,12 @@ export function isRegion(value: string): value is Region {
 export function regionDef(key: Region): RegionDef {
   return REGIONS.find((r) => r.key === key) ?? REGIONS[0];
 }
+
+// Where each hub's public gallery (and so its platform QR code) lives.
+// India keeps the original /gallery path — QR codes printed before regions
+// existed point there and must keep working. Rest of World deliberately
+// sits OUTSIDE /gallery (at /world): if it were /gallery/row, a visitor who
+// trimmed "/row" off the link would land on the India hub and its prices.
+export function hubPath(region: Region): string {
+  return region === "row" ? "/world" : "/gallery";
+}
