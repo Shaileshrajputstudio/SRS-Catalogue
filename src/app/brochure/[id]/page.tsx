@@ -72,9 +72,12 @@ export default async function BrochurePage({
   // "from" at all (i.e. this *is* the originally-shared one).
   const isGalleryOrigin = from === "gallery" || from === "gallery-india" || from === "gallery-row";
   const originId = isGalleryOrigin || (from && all.some((b) => b.id === from)) ? from : id;
+  // The bare /gallery no longer exists (it would have to pick a hub for
+  // the visitor), so an old ?from=gallery link falls back to the hub this
+  // catalogue itself belongs to.
   const originHref =
     originId === "gallery"
-      ? "/gallery"
+      ? `/gallery/${brochure.region}`
       : originId === "gallery-india" || originId === "gallery-row"
         ? `/gallery/${originId.slice("gallery-".length)}`
         : `/brochure/${originId}`;
