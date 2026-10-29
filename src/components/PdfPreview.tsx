@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { ArrowOutwardIcon } from "@/components/ArrowIcons";
 
@@ -85,11 +85,118 @@ function DownloadIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-// A brand-styled PDF preview rendered entirely client-side onto a canvas
-// (pdfjs-dist) — replaces the raw browser-native PDF viewer (its own
-// toolbar, print/download icons, zoom controls) that looked out of place
-// dropped into a branded modal. The page itself, on paper, with our own
-// toolbar: rotate, zoom, page navigation, download.
+
+const PAGE_GAP = 16;
+const MAX_CANVAS_PIXELS = 16_000_000;
+
+// One page of the continuous scroll. Only renders while it is near the
+// viewport and releases its bitmap when scrolled far away, so a 100+ page
+// catalogue doesn't exhaust canvas memory on phones.
+function PdfPage({
+  pdf,
+  pageNumber,
+  rotation,
+  width,
+  defaultAspect,
+  rootRef,
+  title,
+}: {
+  pdf: PDFDocumentProxy;
+  pageNumber: number;
+  rotation: number;
+  width: number;
+  defaultAspect: number;
+  rootRef: React.RefObject<HTMLDivElement | null>;
+  title: string;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [near, setNear] = useState(false);
+  const [aspect, setAspect] = useState<number | null>(null);
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setNear(entry.isIntersecting), {
+      root: rootRef.current,
+      rootMargin: "1500px 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [rootRef]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (!near) {
+      canvas.width = 0;
+      canvas.height = 0;
+      setDrawn(false);
+      return;
+    }
+
+    let cancelled = false;
+    let task: { promise: Promise<unknown>; cancel: () => void } | null = null;
+    let pdfPage: Awaited<ReturnType<PDFDocumentProxy["getPage"]>> | null = null;
+
+    (async () => {
+      try {
+        pdfPage = await pdf.getPage(pageNumber);
+        if (cancelled) return;
+        const base = pdfPage.getViewport({ scale: 1, rotation });
+        const cssScale = width / base.width;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const area = base.width * base.height * (cssScale * dpr) ** 2;
+        if (area > MAX_CANVAS_PIXELS) dpr *= Math.sqrt(MAX_CANVAS_PIXELS / area);
+        const viewport = pdfPage.getViewport({ scale: cssScale * dpr, rotation });
+
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${Math.round(base.height * cssScale)}px`;
+        setAspect(base.height / base.width);
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        task = pdfPage.render({ canvas, canvasContext: ctx, viewport });
+        await task.promise;
+        if (!cancelled) setDrawn(true);
+      } catch (err) {
+        if ((err as { name?: string })?.name !== "RenderingCancelledException") {
+          console.error(`PdfPreview: failed to render page ${pageNumber}`, err);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      task?.cancel();
+      pdfPage?.cleanup();
+    };
+  }, [near, pdf, pageNumber, rotation, width]);
+
+  return (
+    <div
+      ref={wrapRef}
+      data-page={pageNumber}
+      className="relative shrink-0 rounded-sm bg-white shadow-lg"
+      style={{ width, height: Math.round(width * (aspect ?? defaultAspect)) }}
+    >
+      {!drawn && (
+        <span className="font-sans-ui absolute inset-0 flex items-center justify-center text-xs tabular-nums text-[var(--ink)]/25">
+          {pageNumber}
+        </span>
+      )}
+      <canvas ref={canvasRef} aria-label={`${title} — page ${pageNumber}`} className="absolute top-0 left-0" />
+    </div>
+  );
+}
+
+// A brand-styled PDF viewer rendered entirely client-side (pdfjs-dist):
+// every page stacked in one continuous vertical scroll, like a PDF reader,
+// with our own toolbar — rotate, zoom, jump to page, download. Zooming past
+// fit-to-width scrolls sideways.
 export function PdfPreview({
   url,
   title,
@@ -101,21 +208,20 @@ export function PdfPreview({
   hideDownload?: boolean;
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfRef = useRef<PDFDocumentProxy | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const loadingTaskRef = useRef<{ destroy: () => Promise<void> } | null>(null);
-  const renderTokenRef = useRef(0);
+  const anchorRef = useRef<{ y: number; x: number } | null>(null);
+  const scrollFrameRef = useRef(0);
 
+  const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
+  const [firstSize, setFirstSize] = useState<{ w: number; h: number } | null>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState<number | null>(null);
-  // The document opens (isLoading false) long before the current page has
-  // actually been fetched and drawn — without this the viewer sat on a
-  // blank white page for seconds with nothing saying it was working.
-  const [pageLoading, setPageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
@@ -130,7 +236,8 @@ export function PdfPreview({
     setPage(1);
     setZoom(1);
     setRotation(0);
-    pdfRef.current = null;
+    setPdf(null);
+    setFirstSize(null);
 
     (async () => {
       try {
@@ -147,10 +254,13 @@ export function PdfPreview({
           if (!cancelled && total) setProgress(Math.min(100, Math.round((loaded / total) * 100)));
         };
         loadingTaskRef.current = loadingTask;
-        const pdf = await loadingTask.promise;
+        const doc = await loadingTask.promise;
+        const first = await doc.getPage(1);
+        const v = first.getViewport({ scale: 1 });
         if (cancelled) return;
-        pdfRef.current = pdf;
-        setNumPages(pdf.numPages);
+        setPdf(doc);
+        setFirstSize({ w: v.width, h: v.height });
+        setNumPages(doc.numPages);
         setIsLoading(false);
       } catch (err) {
         console.error("PdfPreview: failed to load", err);
@@ -168,91 +278,99 @@ export function PdfPreview({
     };
   }, [url]);
 
-  // Render the current page onto the canvas — fit to the available width by
-  // default, then scaled further by zoom/rotation (capped for crispness on
-  // high-DPI screens).
   useEffect(() => {
-    if (isLoading || error || !pdfRef.current || !viewportRef.current || !canvasRef.current) return;
-    const token = ++renderTokenRef.current;
-    setPageLoading(true);
+    const el = viewportRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setContainerWidth(el.clientWidth));
+    ro.observe(el);
+    setContainerWidth(el.clientWidth);
+    return () => ro.disconnect();
+  }, [isLoading]);
 
-    (async () => {
-      try {
-        const pdfPage = await pdfRef.current!.getPage(page);
-        if (renderTokenRef.current !== token) return;
+  const rotated = rotation % 180 !== 0;
+  const baseW = firstSize ? (rotated ? firstSize.h : firstSize.w) : 1;
+  const baseH = firstSize ? (rotated ? firstSize.w : firstSize.h) : 1;
+  const available = Math.max(containerWidth - (containerWidth < 640 ? 24 : 48), 100);
+  const pageWidth = Math.round(baseW * Math.min(available / baseW, 2) * zoom);
+  const defaultAspect = baseH / baseW;
 
-        const canvas = canvasRef.current!;
-        const available = viewportRef.current!.clientWidth - 48;
-        const baseViewport = pdfPage.getViewport({ scale: 1, rotation });
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const fitScale = Math.min(available / baseViewport.width, 2);
-        const cssScale = fitScale * zoom;
-        const viewport = pdfPage.getViewport({ scale: cssScale * dpr, rotation });
+  // Keep the reader's place when zoom/rotation change the page sizes.
+  useLayoutEffect(() => {
+    const el = viewportRef.current;
+    const anchor = anchorRef.current;
+    if (!el || !anchor) return;
+    anchorRef.current = null;
+    el.scrollTop = anchor.y * el.scrollHeight;
+    el.scrollLeft = anchor.x * el.scrollWidth - el.clientWidth / 2;
+  }, [zoom, rotation]);
 
-        canvas.width = Math.round(viewport.width);
-        canvas.height = Math.round(viewport.height);
-        canvas.style.width = `${Math.round(viewport.width / dpr)}px`;
-        canvas.style.height = `${Math.round(viewport.height / dpr)}px`;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        await pdfPage.render({ canvas, canvasContext: ctx, viewport }).promise;
-      } finally {
-        if (renderTokenRef.current === token) setPageLoading(false);
-      }
-    })();
-  }, [page, isLoading, error, zoom, rotation]);
-
-  function goPrev() {
-    setPage((p) => Math.max(1, p - 1));
+  function rememberPlace() {
+    const el = viewportRef.current;
+    if (!el || !el.scrollHeight || !el.scrollWidth) return;
+    anchorRef.current = {
+      y: el.scrollTop / el.scrollHeight,
+      x: (el.scrollLeft + el.clientWidth / 2) / el.scrollWidth,
+    };
   }
-  function goNext() {
-    setPage((p) => Math.min(numPages, p + 1));
+
+  function updateCurrentPage() {
+    scrollFrameRef.current = 0;
+    const root = viewportRef.current;
+    const content = contentRef.current;
+    if (!root || !content) return;
+    const mid = root.scrollTop + root.clientHeight / 2;
+    let current = 1;
+    for (const child of Array.from(content.children) as HTMLElement[]) {
+      if (child.offsetTop <= mid) current = Number(child.dataset.page) || current;
+      else break;
+    }
+    setPage(current);
+  }
+
+  function onScroll() {
+    if (!scrollFrameRef.current) scrollFrameRef.current = requestAnimationFrame(updateCurrentPage);
+  }
+
+  useEffect(() => () => cancelAnimationFrame(scrollFrameRef.current), []);
+
+  function goTo(n: number) {
+    const target = Math.min(numPages, Math.max(1, n));
+    const root = viewportRef.current;
+    const el = contentRef.current?.querySelector<HTMLElement>(`[data-page="${target}"]`);
+    if (!root || !el) return;
+    root.scrollTop = el.offsetTop - PAGE_GAP;
+    setPage(target);
   }
   function zoomOut() {
+    rememberPlace();
     setZoom((z) => Math.max(MIN_ZOOM, +(z - ZOOM_STEP).toFixed(2)));
   }
   function zoomIn() {
+    rememberPlace();
     setZoom((z) => Math.min(MAX_ZOOM, +(z + ZOOM_STEP).toFixed(2)));
   }
   function rotate() {
+    rememberPlace();
     setRotation((r) => (r + 90) % 360);
   }
   function downloadPdf() {
     window.open(url, "_blank", "noopener,noreferrer");
   }
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-  function onTouchStart(e: React.TouchEvent) {
-    const t = e.touches[0];
-    touchStart.current = e.touches.length === 1 && zoom <= 1 ? { x: t.clientX, y: t.clientY } : null;
-  }
-  function onTouchEnd(e: React.TouchEvent) {
-    const start = touchStart.current;
-    touchStart.current = null;
-    if (!start) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) goNext();
-      else goPrev();
-    }
-  }
   function onKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "ArrowLeft") goPrev();
-    if (e.key === "ArrowRight") goNext();
+    if (zoom > 1) return;
+    if (e.key === "ArrowLeft") goTo(page - 1);
+    if (e.key === "ArrowRight") goTo(page + 1);
   }
 
   return (
     <div className="flex h-full min-w-0 flex-col outline-none" tabIndex={0} onKeyDown={onKeyDown}>
       <div
         ref={viewportRef}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto p-6"
+        onScroll={onScroll}
+        className="relative min-w-0 flex-1 overflow-auto"
       >
         {isLoading && (
-          <div className="font-sans-ui flex flex-col items-center gap-3 text-center text-xs text-[var(--ink)]/50">
+          <div className="font-sans-ui flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-xs text-[var(--ink)]/50">
             <span className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--ink)]/15 border-t-[var(--ink)]/50" />
             <span>
               Loading catalogue…{progress !== null && <span className="tabular-nums"> {progress}%</span>}
@@ -270,14 +388,8 @@ export function PdfPreview({
             </span>
           </div>
         )}
-        {!isLoading && !error && pageLoading && (
-          <div className="font-sans-ui pointer-events-none absolute top-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--paper)]/90 px-3 py-1.5 text-xs text-[var(--ink)]/60 shadow-sm backdrop-blur">
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--ink)]/15 border-t-[var(--ink)]/60" />
-            Preparing page {page}…
-          </div>
-        )}
         {error && (
-          <div className="font-sans-ui flex max-w-[260px] flex-col items-center gap-4 text-center text-xs text-[var(--ink)]/60">
+          <div className="font-sans-ui mx-auto flex h-full max-w-[260px] flex-col items-center justify-center gap-4 p-6 text-center text-xs text-[var(--ink)]/60">
             <p>{error}</p>
             <a
               href={url}
@@ -293,8 +405,25 @@ export function PdfPreview({
             )}
           </div>
         )}
-        {!isLoading && !error && (
-          <canvas ref={canvasRef} aria-label={`${title} — page ${page}`} className="rounded-sm bg-white shadow-lg" />
+        {!isLoading && !error && pdf && firstSize && (
+          <div
+            ref={contentRef}
+            className="relative mx-auto flex w-max min-w-full flex-col items-center p-3 sm:p-6"
+            style={{ gap: PAGE_GAP }}
+          >
+            {Array.from({ length: numPages }, (_, i) => (
+              <PdfPage
+                key={`${i + 1}-${rotation}`}
+                pdf={pdf}
+                pageNumber={i + 1}
+                rotation={rotation}
+                width={pageWidth}
+                defaultAspect={defaultAspect}
+                rootRef={viewportRef}
+                title={title}
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -333,7 +462,7 @@ export function PdfPreview({
               <Divider />
               <button
                 type="button"
-                onClick={goPrev}
+                onClick={() => goTo(page - 1)}
                 disabled={page <= 1}
                 aria-label="Previous page"
                 className={iconButtonClass}
@@ -345,7 +474,7 @@ export function PdfPreview({
               </span>
               <button
                 type="button"
-                onClick={goNext}
+                onClick={() => goTo(page + 1)}
                 disabled={page >= numPages}
                 aria-label="Next page"
                 className={iconButtonClass}
